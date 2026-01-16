@@ -11,8 +11,11 @@ add_executable(wyrm
 	src/vm/debug.c
 	src/vm/value.c
 	src/vm/vm.c
-	src/frontend/lexer/lexer.c
-	src/frontend/parser/parser.c
-	src/frontend/parser/expr.c
+	src/compiler/lexer/lexer.c
+	src/compiler/parser/parser.c
+	src/compiler/parser/expr.c
+	src/compiler/error/error.c
+	src/compiler/ast.c
+	src/compiler/codegen/codegen.c
 )
 target_include_directories(wyrm PUBLIC "${CMAKE_SOURCE_DIR}/src")

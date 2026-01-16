@@ -3,13 +3,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "../error/error.h"
+
 Token* parseTok;
 
-void consume(TokenType type, const char* error) {
+ASTNode* makeNode(ArenaAllocator* arena, NodeType type) {
+	ASTNode* ast = arenaAlloc(arena, sizeof(ASTNode));
+	ast->type = type;
+	ast->token = parseTok;
+	return ast;
+}
+
+void consume(TokenType type, const char* message) {
 	if (parseTok->type != type) {
-		printf("[Error]: %s\n%4u | Error occured here", error, parseTok->line);
-		exit(1);
+		error(message, parseTok->line);
 	}
+	next();
+}
+void next() {
 	parseTok = nextToken();
 }
 

@@ -55,3 +55,5 @@ typedef struct ASTNode {
 		} stmt;
 	} data;
 } ASTNode;
+
+void printAST(ASTNode* ast, int indent);

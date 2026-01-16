@@ -11,6 +11,15 @@ typedef enum {
 
 	TOK_PLUS,
 	TOK_MINUS,
+	TOK_ASTERISK,
+	TOK_SLASH,
+
+	TOK_LPAREN,
+	TOK_RPAREN,
+	TOK_LBRACK,
+	TOK_RBRACK,
+	TOK_LBRACE,
+	TOK_RBRACE,
 } TokenType;
 
 typedef struct {

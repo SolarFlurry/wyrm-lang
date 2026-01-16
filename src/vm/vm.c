@@ -31,6 +31,7 @@ InterpretResult evaluate(Chunk* chunk) {
 	#define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
 
 	while (true) {
+		if (vm.ip >= vm.chunk->bytecode + vm.chunk->length) return INTERPRET_OK;
 		uint8_t instruction = READ_BYTE();
 		switch (instruction) {
 			case OP_CONSTANT: {

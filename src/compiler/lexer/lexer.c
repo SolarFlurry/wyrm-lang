@@ -74,6 +74,10 @@ Token* nextToken() {
 	switch (c) {
 		case '+': return makeToken(TOK_PLUS);
 		case '-': return makeToken(TOK_MINUS);
+		case '*': return makeToken(TOK_ASTERISK);
+		case '/': return makeToken(TOK_SLASH);
+		case '(': return makeToken(TOK_LPAREN);
+		case ')': return makeToken(TOK_RPAREN);
 		default: break;
 	}
 	return makeToken(TOK_UNKNOWN);
