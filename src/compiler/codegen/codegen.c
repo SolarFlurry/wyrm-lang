@@ -8,7 +8,7 @@
 
 Chunk generateBytecode(ASTNode* ast) {
 	if (ast->type != NODE_STMT_PROGRAM) {
-		error("Argument to bytecode not a program", 0);
+		error("Argument to bytecode not a program", 0, 0);
 	}
 
 	Chunk bytecode;
@@ -42,7 +42,7 @@ void genExpression(Chunk* chunk, ASTNode* expr) {
 					writeChunk(chunk, constant, expr->token->line);
 				} break;
 				default: {
-					error("this literal type is not supported yet", expr->token->line);
+					error("this literal type is not supported yet", expr->token->line, expr->token->col);
 					return;
 				}
 			}
@@ -58,16 +58,16 @@ void genExpression(Chunk* chunk, ASTNode* expr) {
 					writeChunk(chunk, OP_SUBTRACT, expr->token->line);
 				} break;
 				default: {
-					error("this operator is not yet supported", expr->token->line);
+					error("this operator is not yet supported", expr->token->line, expr->token->col);
 				}
 			}
 		} break;
 		case NODE_EXPR_IDENT: {
-			error("Identifiers are not supported yet", expr->token->line);
+			error("Identifiers are not supported yet", expr->token->line, expr->token->col);
 			return;
 		}
 		default: {
-			error("not an expression", expr->token->line);
+			error("not an expression", expr->token->line, expr->token->col);
 			return;
 		}
 	}

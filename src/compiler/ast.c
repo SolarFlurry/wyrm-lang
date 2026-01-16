@@ -13,6 +13,14 @@ void printAST(ASTNode* ast, int indent) {
 				printAST(ast->data.stmt.program.stmts[i], indent + 1);
 			}
 		} break;
+		case NODE_STMT_VARDEC: {
+			printf("VarDecl\x1b[0m:\n");
+			printAST(ast->data.stmt.varDec.lvalue, indent + 1);
+			if (ast->data.stmt.varDec.type != NULL) {
+				printAST(ast->data.stmt.varDec.type, indent + 1);
+			}
+			printAST(ast->data.stmt.varDec.initial, indent + 1);
+		} break;
 		case NODE_EXPR_IDENT: {
 			printf("Identifier\x1b[0m => \x1b[35m'");
 			for (int i = 0; i < ast->token->length; i++) {
@@ -42,5 +50,8 @@ void printAST(ASTNode* ast, int indent) {
 			printAST(ast->data.expr.binaryOp.lhs, indent + 1);
 			printAST(ast->data.expr.binaryOp.rhs, indent + 1);
 		} break;
+		default: {
+			printf("Unknown ASTNode type...\n");
+		}
 	}
 }

@@ -9,10 +9,20 @@ typedef enum {
 	TOK_INT,
 	TOK_IDENT,
 
+	TOK_KEYWORD_LET,
+
 	TOK_PLUS,
 	TOK_MINUS,
 	TOK_ASTERISK,
 	TOK_SLASH,
+
+	TOK_EQ,
+	TOK_EQ_EQ,
+
+	TOK_COLON,
+	TOK_SEMICOLON,
+	TOK_COMMA,
+	TOK_DOT,
 
 	TOK_LPAREN,
 	TOK_RPAREN,
@@ -27,4 +37,5 @@ typedef struct {
 	char* start;
 	size_t length;
 	uint32_t line;
+	uint32_t col;
 } Token;

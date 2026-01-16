@@ -16,7 +16,7 @@ ASTNode* makeNode(ArenaAllocator* arena, NodeType type) {
 
 void consume(TokenType type, const char* message) {
 	if (parseTok->type != type) {
-		error(message, parseTok->line);
+		error(message, parseTok->line, parseTok->col);
 	}
 	next();
 }
@@ -34,7 +34,7 @@ ASTNode* parse(ArenaAllocator* arena) {
 	GrowableArray stmts = growableArrayCreate(arena, sizeof(ASTNode*));
 
 	while (lookahead(0)->type != TOK_EOF) {
-		ASTNode* stmt = parseExpression(arena);
+		ASTNode* stmt = parseStatement(arena);
 		ASTNode** slot = (ASTNode**)growableArrayPush(&stmts);
 		*slot = stmt;
 	}

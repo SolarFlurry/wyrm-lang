@@ -8,6 +8,7 @@ typedef struct {
 	char* current;
 	char* start;
 	uint32_t line;
+	uint32_t col;
 	ArenaAllocator* arena;
 } Lexer;
 

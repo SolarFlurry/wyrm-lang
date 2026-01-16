@@ -12,6 +12,7 @@ typedef enum {
 	NODE_EXPR_UNOP,
 
 	NODE_STMT_PROGRAM,
+	NODE_STMT_VARDEC,
 } NodeType;
 
 typedef enum {
@@ -52,6 +53,11 @@ typedef struct ASTNode {
 				ASTNode** stmts;
 				size_t stmtCount;
 			} program;
+			struct {
+				ASTNode* lvalue;
+				ASTNode* type; // can be null
+				ASTNode* initial;
+			} varDec;
 		} stmt;
 	} data;
 } ASTNode;

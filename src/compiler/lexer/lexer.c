@@ -1,6 +1,7 @@
 #include "lexer.h"
 
 #include <ctype.h>
+#include <string.h>
 
 Lexer lx;
 
@@ -8,6 +9,7 @@ void initLexer(ArenaAllocator* arena, char* program) {
 	lx.current = program;
 	lx.start = lx.current;
 	lx.line = 0;
+	lx.col = 0;
 	lx.arena = arena;
 }
 
@@ -17,7 +19,30 @@ static Token* makeToken(TokenType type) {
 	token->start = lx.start;
 	token->length = lx.current - lx.start;
 	token->line = lx.line;
+	token->col = lx.col - (lx.current - lx.start);
 	return token;
+}
+
+static TokenType checkKeyword(int start, int length, const char* rest, TokenType type) {
+	if (lx.current - lx.start == start + length &&
+    	memcmp(lx.start + start, rest, length) == 0) {
+    	return type;
+	}
+
+  	return TOK_IDENT;
+}
+
+static TokenType identifierType() {
+	switch (lx.start[0]) {
+		case 'l': return checkKeyword(1, 2, "et", TOK_KEYWORD_LET);
+	}
+	return TOK_IDENT;
+}
+
+bool match(char c) {
+	bool equal = peek(0) == c;
+	advance();
+	return equal;
 }
 
 bool isDigit(char c) {
@@ -39,6 +64,7 @@ char peek(size_t offset) {
 void advance() {
 	if (isEnd()) return;
 	lx.current++;
+	lx.col++;
 }
 void skipWhitespace() {
 	while (true) {
@@ -47,8 +73,13 @@ void skipWhitespace() {
 		if (peek(0) == '/' && peek(1) == '/') {
 			while (peek(0) != '\n' && !isEnd()) advance();
 		}
-		if (peek(0) == '\n') lx.line++;
-		advance();
+		if (peek(0) == '\n') {
+			lx.line++;
+			advance();
+			lx.col = 0;
+		} else {
+			advance();
+		}
 	}
 }
 Token* nextToken() {
@@ -61,7 +92,7 @@ Token* nextToken() {
 		while (!isEnd() && isAlphaDigit(peek(0))) {
 			advance();
 		}
-		return makeToken(TOK_IDENT);
+		return makeToken(identifierType());
 	}
 	if (isDigit(peek(0))) {
 		while (!isEnd() && isDigit(peek(0))) {
@@ -78,6 +109,7 @@ Token* nextToken() {
 		case '/': return makeToken(TOK_SLASH);
 		case '(': return makeToken(TOK_LPAREN);
 		case ')': return makeToken(TOK_RPAREN);
+		case '=': return makeToken(match('=') ? TOK_EQ_EQ : TOK_EQ);
 		default: break;
 	}
 	return makeToken(TOK_UNKNOWN);

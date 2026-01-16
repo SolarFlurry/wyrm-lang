@@ -1,6 +1,7 @@
 #include "parser.h"
 
 #include "compiler/error/error.h"
+#include <stdio.h>
 
 static BindingPower infixBP(TokenType op) {
 	switch (op) {
@@ -71,8 +72,9 @@ ASTNode* parseAtom(ArenaAllocator* arena) {
 			return literal;
 		}
 		default: {
-			error("Unexpected token", lookahead(0)->line);
-			next(); // not sure what this should return
+			error("Unexpected token", lookahead(0)->line, lookahead(0)->col);
+			next();
+			// not sure what this should return
 		}
 	}
 }

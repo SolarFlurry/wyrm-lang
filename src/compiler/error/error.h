@@ -6,9 +6,10 @@
 
 typedef struct {
 	uint32_t line;
+	uint32_t col;
 	const char* message;
 } ErrorInformation;
 
-void error(const char* message, uint32_t line);
+void error(const char* message, uint32_t line, uint32_t col);
 void printErrors();
 size_t errorsCount();
