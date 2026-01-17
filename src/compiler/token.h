@@ -10,19 +10,37 @@ typedef enum {
 	TOK_IDENT,
 
 	TOK_KEYWORD_LET,
+	TOK_KEYWORD_MUT,
+	TOK_KEYWORD_IF,
+	TOK_KEYWORD_ELSE,
+	TOK_KEYWORD_FUNC,
+	TOK_KEYWORD_STRUCT,
 
 	TOK_PLUS,
 	TOK_MINUS,
 	TOK_ASTERISK,
 	TOK_SLASH,
-
+	TOK_PERCENT, // !
+	TOK_MINUS_RARROW,
+	TOK_EQ_RARROW, // !
 	TOK_EQ,
 	TOK_EQ_EQ,
-
+	TOK_LARROW,
+	TOK_RARROW,
+	TOK_LARROW_EQ,
+	TOK_RARROW_EQ,
+	TOK_AMP, // !
+	TOK_AMP_AMP, // !
+	TOK_PIPE, // !
+	TOK_PIPE_PIPE, // !
 	TOK_COLON,
+	TOK_COLON_COLON,
 	TOK_SEMICOLON,
 	TOK_COMMA,
 	TOK_DOT,
+	TOK_DOT_DOT,
+	TOK_BANG, // !
+	TOK_BANG_EQ, // !
 
 	TOK_LPAREN,
 	TOK_RPAREN,
@@ -32,9 +50,11 @@ typedef enum {
 	TOK_RBRACE,
 } TokenType;
 
+const char* describeTokenType(TokenType type);
+
 typedef struct {
 	TokenType type;
-	char* start;
+	const char* start;
 	size_t length;
 	uint32_t line;
 	uint32_t col;

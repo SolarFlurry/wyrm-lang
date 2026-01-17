@@ -16,7 +16,11 @@ ASTNode* makeNode(ArenaAllocator* arena, NodeType type) {
 
 void consume(TokenType type, const char* message) {
 	if (parseTok->type != type) {
-		error(message, parseTok->line, parseTok->col);
+		if (parseTok->type == TOK_EOF) {
+			printErrors();
+			exit(1);
+		}
+		errorFromCause(message, parseTok);
 	}
 	next();
 }

@@ -10,13 +10,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char* compileSource;
+Compiler compiler;
 
-Chunk compile(char* source) {
+Chunk compile(const char* source, const char* filename) {
 	ArenaAllocator allocator;
 	arenaInit(&allocator, 1024);
 
-	compileSource = source;
+	compiler.source = source;
+	compiler.filename = filename;
 	
 	initLexer(&allocator, source);
 	ASTNode* ast = parse(&allocator);
@@ -39,6 +40,9 @@ Chunk compile(char* source) {
 	return bytecode;
 }
 
-char* getSource() {
-	return compileSource;
+const char* getSource() {
+	return compiler.source;
+}
+const char* getFilename() {
+	return compiler.filename;
 }

@@ -2,6 +2,7 @@
 
 #include "compiler/error/error.h"
 #include <stdio.h>
+#include <string.h>
 
 static BindingPower infixBP(TokenType op) {
 	switch (op) {
@@ -29,7 +30,7 @@ static ASTNode* parseExprBP(ArenaAllocator* arena, int minBP) {
 	if (lookahead(0)->type == TOK_LPAREN) {
 		next();
 		lhs = parseExprBP(arena, 0);
-		consume(TOK_RPAREN, "Expected matching parenthsis");
+		consume(TOK_RPAREN, "Expected matching parenthesis");
 	} else {
 		lhs = parseAtom(arena);
 	}
@@ -72,7 +73,12 @@ ASTNode* parseAtom(ArenaAllocator* arena) {
 			return literal;
 		}
 		default: {
-			error("Unexpected token", lookahead(0)->line, lookahead(0)->col);
+			const char* base = "Unexpected ";
+			const char* addition = describeTokenType(lookahead(0)->type);
+			char* fmt = arenaAlloc(arena, strlen(base) + strlen(addition) + 1);
+			memcpy(fmt, base, strlen(base));
+			strcat(fmt, addition);
+			errorFromCause(fmt, lookahead(0));
 			next();
 			// not sure what this should return
 		}

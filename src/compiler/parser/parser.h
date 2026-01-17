@@ -18,5 +18,6 @@ Token* lookahead(size_t offset);
 
 ASTNode* parse(ArenaAllocator* arena);
 ASTNode* parseStatement(ArenaAllocator* arena);
+ASTNode* parseType(ArenaAllocator* arena);
 ASTNode* parseExpression(ArenaAllocator* arena);
 ASTNode* parseAtom(ArenaAllocator* arena);

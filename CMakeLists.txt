@@ -15,9 +15,11 @@ add_executable(wyrm
 	src/compiler/parser/parser.c
 	src/compiler/parser/expr.c
 	src/compiler/parser/stmt.c
+	src/compiler/parser/type.c
 	src/compiler/error/error.c
 	src/compiler/ast.c
 	src/compiler/codegen/codegen.c
 	src/compiler/compiler.c
+	src/compiler/token.c
 )
 target_include_directories(wyrm PUBLIC "${CMAKE_SOURCE_DIR}/src")

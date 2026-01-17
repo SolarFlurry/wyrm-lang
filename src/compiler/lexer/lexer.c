@@ -5,7 +5,7 @@
 
 Lexer lx;
 
-void initLexer(ArenaAllocator* arena, char* program) {
+void initLexer(ArenaAllocator* arena, const char* program) {
 	lx.current = program;
 	lx.start = lx.current;
 	lx.line = 0;
@@ -35,6 +35,11 @@ static TokenType checkKeyword(int start, int length, const char* rest, TokenType
 static TokenType identifierType() {
 	switch (lx.start[0]) {
 		case 'l': return checkKeyword(1, 2, "et", TOK_KEYWORD_LET);
+		case 'm': return checkKeyword(1, 2, "ut", TOK_KEYWORD_MUT);
+		case 'i': return checkKeyword(1, 1, "f", TOK_KEYWORD_IF);
+		case 'e': return checkKeyword(1, 3, "lse", TOK_KEYWORD_ELSE);
+		case 'f': return checkKeyword(1, 3, "unc", TOK_KEYWORD_FUNC);
+		case 's': return checkKeyword(1, 5, "truct", TOK_KEYWORD_STRUCT);
 	}
 	return TOK_IDENT;
 }
@@ -104,11 +109,21 @@ Token* nextToken() {
 	advance();
 	switch (c) {
 		case '+': return makeToken(TOK_PLUS);
-		case '-': return makeToken(TOK_MINUS);
+		case '-': return makeToken(match('>') ? TOK_MINUS_RARROW : TOK_MINUS);
 		case '*': return makeToken(TOK_ASTERISK);
 		case '/': return makeToken(TOK_SLASH);
+		case ';': return makeToken(TOK_SEMICOLON);
+		case ':': return makeToken(match(':') ? TOK_COLON_COLON : TOK_COLON);
+		case '.': return makeToken(match('.') ? TOK_DOT_DOT : TOK_DOT);
+		case ',': return makeToken(TOK_COMMA);
+		case '<': return makeToken(match('=') ? TOK_LARROW_EQ : TOK_LARROW);
+		case '>': return makeToken(match('=') ? TOK_RARROW_EQ : TOK_RARROW);
 		case '(': return makeToken(TOK_LPAREN);
 		case ')': return makeToken(TOK_RPAREN);
+		case '[': return makeToken(TOK_LBRACK);
+		case ']': return makeToken(TOK_RBRACK);
+		case '{': return makeToken(TOK_LBRACE);
+		case '}': return makeToken(TOK_RBRACE);
 		case '=': return makeToken(match('=') ? TOK_EQ_EQ : TOK_EQ);
 		default: break;
 	}

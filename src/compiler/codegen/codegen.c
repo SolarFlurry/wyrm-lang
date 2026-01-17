@@ -42,7 +42,7 @@ void genExpression(Chunk* chunk, ASTNode* expr) {
 					writeChunk(chunk, constant, expr->token->line);
 				} break;
 				default: {
-					error("this literal type is not supported yet", expr->token->line, expr->token->col);
+					errorFromCause("this literal type is not supported yet", expr->token);
 					return;
 				}
 			}
@@ -58,16 +58,16 @@ void genExpression(Chunk* chunk, ASTNode* expr) {
 					writeChunk(chunk, OP_SUBTRACT, expr->token->line);
 				} break;
 				default: {
-					error("this operator is not yet supported", expr->token->line, expr->token->col);
+					errorFromCause("this operator is not yet supported", expr->token);
 				}
 			}
 		} break;
 		case NODE_EXPR_IDENT: {
-			error("Identifiers are not supported yet", expr->token->line, expr->token->col);
+			errorFromCause("Identifiers are not supported yet", expr->token);
 			return;
 		}
 		default: {
-			error("not an expression", expr->token->line, expr->token->col);
+			errorFromCause("not an expression", expr->token);
 			return;
 		}
 	}

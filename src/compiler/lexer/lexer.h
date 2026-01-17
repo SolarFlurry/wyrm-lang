@@ -5,14 +5,14 @@
 #include "../token.h"
 
 typedef struct {
-	char* current;
-	char* start;
+	const char* current;
+	const char* start;
 	uint32_t line;
 	uint32_t col;
 	ArenaAllocator* arena;
 } Lexer;
 
-void initLexer(ArenaAllocator* arena, char* program);
+void initLexer(ArenaAllocator* arena, const char* program);
 
 bool isEnd();
 char peek(size_t offset);
