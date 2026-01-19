@@ -2,6 +2,8 @@
 
 #include "lexer/lexer.h"
 #include "parser/parser.h"
+#include "semantic_analysis/name_res.h"
+#include "semantic_analysis/symtable.h"
 #include "codegen/codegen.h"
 #include "ast.h"
 #include "error/error.h"
@@ -22,12 +24,24 @@ Chunk compile(const char* source, const char* filename) {
 	initLexer(&allocator, source);
 	ASTNode* ast = parse(&allocator);
 	printf("Arena allocated %lu bytes\n", allocator.totalAllocated);
+
 	if (errorsCount() > 0) {
 		printErrors();
 		arenaDestroy(&allocator);
 		exit(1);
 	}
+
 	printAST(ast, 0);
+
+	Scope topScope;
+	initScope(&allocator, &topScope, NULL);
+	resolveNames(&allocator, ast, &topScope);
+
+	if (errorsCount() > 0) {
+		printErrors();
+		arenaDestroy(&allocator);
+		exit(1);
+	}
 	
 	Chunk bytecode = generateBytecode(ast);
 	arenaDestroy(&allocator);

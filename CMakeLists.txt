@@ -21,5 +21,7 @@ add_executable(wyrm
 	src/compiler/codegen/codegen.c
 	src/compiler/compiler.c
 	src/compiler/token.c
+	src/compiler/semantic_analysis/symtable.c
+	src/compiler/semantic_analysis/name_res.c
 )
 target_include_directories(wyrm PUBLIC "${CMAKE_SOURCE_DIR}/src")

@@ -36,6 +36,7 @@ static TokenType identifierType() {
 	switch (lx.start[0]) {
 		case 'l': return checkKeyword(1, 2, "et", TOK_KEYWORD_LET);
 		case 'm': return checkKeyword(1, 2, "ut", TOK_KEYWORD_MUT);
+		case 'c': return checkKeyword(1, 4, "onst", TOK_KEYWORD_CONST);
 		case 'i': return checkKeyword(1, 1, "f", TOK_KEYWORD_IF);
 		case 'e': return checkKeyword(1, 3, "lse", TOK_KEYWORD_ELSE);
 		case 'f': return checkKeyword(1, 3, "unc", TOK_KEYWORD_FUNC);
@@ -112,6 +113,7 @@ Token* nextToken() {
 		case '-': return makeToken(match('>') ? TOK_MINUS_RARROW : TOK_MINUS);
 		case '*': return makeToken(TOK_ASTERISK);
 		case '/': return makeToken(TOK_SLASH);
+		case '\\': return makeToken(TOK_BACKSLASH);
 		case ';': return makeToken(TOK_SEMICOLON);
 		case ':': return makeToken(match(':') ? TOK_COLON_COLON : TOK_COLON);
 		case '.': return makeToken(match('.') ? TOK_DOT_DOT : TOK_DOT);

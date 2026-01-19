@@ -7,6 +7,7 @@ const char* describeTokenType(TokenType type) {
 		case TOK_IDENT: return "identifier";
 		case TOK_KEYWORD_LET: return "keyword 'let'";
 		case TOK_KEYWORD_MUT: return "keyword 'mut'";
+		case TOK_KEYWORD_CONST: return "keyword 'const'";
 		case TOK_KEYWORD_FUNC: return "keyword 'func'";
 		case TOK_KEYWORD_STRUCT: return "keyword 'struct'";
 		default: return "token";

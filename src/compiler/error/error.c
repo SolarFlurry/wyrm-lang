@@ -2,21 +2,35 @@
 
 #include "../compiler.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 ErrorInformation errors[MAX_ERRORS];
 size_t errorCount = 0;
 
-static const char* getLine(uint32_t lineNum) {
-	const char* line = getSource();
+static char* getLine(uint32_t lineNum) {
+	const char* lineStart = getSource();
 	int currentLine = 0;
-	while (true) {
-		if (currentLine == lineNum) return line;
-		if (line[0] == '\0') return NULL;
-		if (line[0] == '\n') {
-			currentLine++;
+	while (currentLine < lineNum) {
+		lineStart = strchr(lineStart, '\n');
+		if (lineStart == NULL) {
+			return NULL;
 		}
-		line++;
+		lineStart += 1;
+		currentLine += 1;
 	}
+	int lineSize;
+	const char* lineEnd = strchr(lineStart, '\n');
+	if (lineEnd == NULL) {
+		lineSize = strlen(lineStart);
+	} else {
+		lineSize = lineEnd - lineStart;
+	}
+	char* line = (char*)malloc(sizeof(char) * (lineSize + 1));
+	memcpy(line, lineStart, lineSize);
+	line[lineSize] = '\0';
+
+	return line;
 }
 
 void error(const char* message, uint32_t line, uint32_t col) {
@@ -39,6 +53,7 @@ size_t errorsCount() {
 }
 
 static void printError(ErrorInformation info) {
+	char* line = getLine(info.line);
 	printf(
 		"\x1b[1;31m[Error]\x1b[0m: %s\n--> %s:%u:%u\n%4u | %s\n       ",
 		info.message,
@@ -46,8 +61,9 @@ static void printError(ErrorInformation info) {
 		info.line+1,
 		info.col,
 		info.line+1,
-		getLine(info.line)
+		line
 	);
+	free(line);
 	for (int i = 0; i < info.col; i++) {
 		putchar(' ');
 	}

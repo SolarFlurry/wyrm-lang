@@ -35,6 +35,7 @@ typedef struct {
 void arenaInit(ArenaAllocator* arena, size_t initialSize);
 void* arenaAlloc(ArenaAllocator* arena, size_t s);
 void arenaDestroy(ArenaAllocator* arena);
+char* createOwnedString(ArenaAllocator* arena, const char* str, size_t length);
 
 Buffer* bufferCreate(size_t initialSize);
 

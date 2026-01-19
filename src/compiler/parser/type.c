@@ -1,6 +1,7 @@
 #include "parser.h"
 
 #include <string.h>
+#include "../error/error.h"
 
 ASTNode* parseType(ArenaAllocator* arena) {
 	switch (lookahead(0)->type) {
@@ -19,5 +20,9 @@ ASTNode* parseType(ArenaAllocator* arena) {
 			ast->data.type.pointer.pointee = parseType(arena);
 			return ast;
 		} break;
+		default: {
+			errorFromCause("Unexpected token", lookahead(0));
+			next();
+		}
 	}
 }

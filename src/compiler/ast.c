@@ -14,8 +14,11 @@ void printAST(ASTNode* ast, int indent) {
 			}
 		} break;
 		case NODE_STMT_VARDEC: {
-			printf("VarDecl\x1b[0m:\n");
-			printAST(ast->data.stmt.varDec.lvalue, indent + 1);
+			printf("VarDecl\x1b[0m => \x1b[35m'");
+			for (int i = 0; i < ast->data.stmt.varDec.lvalue->length; i++) {
+				putchar(ast->data.stmt.varDec.lvalue->start[i]);
+			}
+			puts("'\x1b[0m");
 			if (ast->data.stmt.varDec.type != NULL) {
 				printAST(ast->data.stmt.varDec.type, indent + 1);
 			}
@@ -34,6 +37,7 @@ void printAST(ASTNode* ast, int indent) {
 				case LIT_INT: {
 					printf("i32");
 				} break;
+				default: {} // do nothing
 			}
 			printf("\x1b[0m \x1b[33m'");
 			for (int i = 0; i < ast->token->length; i++) {

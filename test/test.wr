@@ -1,1 +1,4 @@
-struct
+func main () {
+	let hello = 0;
+	let mut mutable = 1;
+}

@@ -45,6 +45,13 @@ void* arenaAlloc(ArenaAllocator* arena, size_t s) {
 	return ptr;
 }
 
+char* createOwnedString(ArenaAllocator* arena, const char* str, size_t length) {
+	char* c = arenaAlloc(arena, sizeof(char) * (length + 1));
+	strncpy(c, str, length);
+	c[length] = '\0';
+	return c;
+}
+
 void arenaDestroy(ArenaAllocator* arena) {
 	Buffer* current = arena->head;
 	while (current != NULL) {
