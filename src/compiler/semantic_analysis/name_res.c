@@ -1,4 +1,4 @@
-#include "name_res.h"
+#include "semantic_analysis.h"
 
 #include "../error/error.h"
 
@@ -6,7 +6,7 @@ static void resolveNode(ArenaAllocator* arena, ASTNode* ast, Scope* scope) {
 	switch (ast->type) {
 		case NODE_STMT_VARDEC: {
 			if (ast->data.stmt.varDec.varType != VAR_CONST) {
-				errorFromCause("Cannot have a let binding at the global level", ast->token);
+				errorFromCause("Cannot have let bindings at the global scope", ast->token);
 				return;
 			}
 			
@@ -32,7 +32,9 @@ static void resolveNode(ArenaAllocator* arena, ASTNode* ast, Scope* scope) {
 				return;
 			}
 		} break;
-		default: {}// do nothing
+		default: {
+			errorFromCause("Only declarations are allowed at the global scope", ast->token);
+		}
 	}
 }
 

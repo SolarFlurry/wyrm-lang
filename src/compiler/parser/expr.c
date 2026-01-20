@@ -94,7 +94,7 @@ ASTNode* parseAtom(ArenaAllocator* arena) {
 			ASTNode* expr = parseExpression(arena);
 
 			if (lookahead(0)->type != TOK_COMMA) {
-				consume(TOK_RPAREN, "Expected matching parenthesis ')'");
+				consume(TOK_RPAREN, "Expected matching ')'");
 				return expr;
 			}
 
@@ -123,6 +123,27 @@ ASTNode* parseAtom(ArenaAllocator* arena) {
 			literal->data.expr.literal.type = LIT_INT;
 			next();
 			return literal;
+		}
+		case TOK_KEYWORD_IF: {
+			ASTNode* ifExpr = makeNode(arena, NODE_EXPR_IF);
+			next();
+			ifExpr->data.expr.ifExpr.condition = parseExpression(arena);
+			if (lookahead(0)->type == TOK_KEYWORD_THEN) {
+				Token* thenToken = lookahead(0);
+				next();
+				if (lookahead(0)->type == TOK_LBRACE) {
+					errorFromCause("Unexpected keyword 'then'", thenToken);
+				}
+				ifExpr->data.expr.ifExpr.trueBranch = parseExpression(arena);
+			} else {
+				ifExpr->data.expr.ifExpr.trueBranch = parseBlock(arena);
+			}
+			if (lookahead(0)->type != TOK_KEYWORD_ELSE) {
+				return ifExpr;
+			}
+			next();
+			ifExpr->data.expr.ifExpr.falseBranch = parseExpression(arena);
+			return ifExpr;
 		}
 		case TOK_BACKSLASH: {
 			ASTNode* lambda = makeNode(arena, NODE_EXPR_LAMBDA);

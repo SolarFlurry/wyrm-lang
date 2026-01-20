@@ -21,8 +21,7 @@ void consume(TokenType type, const char* message) {
 			exit(1);
 		}
 		errorFromCause(message, parseTok);
-	}
-	next();
+	} else next();
 }
 void next() {
 	parseTok = nextToken();

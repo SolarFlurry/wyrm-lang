@@ -1,4 +1,8 @@
-func main () {
-	let hello = 0;
-	let mut mutable = 1;
+pub func main () {
+	if someCondition then 1 else 2;
+	if anotherCondition {
+		// something
+	} else {
+		// something else
+	};
 }

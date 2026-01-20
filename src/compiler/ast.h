@@ -19,6 +19,7 @@ typedef enum {
 	NODE_STMT_PROGRAM,
 	NODE_STMT_VARDEC,
 	NODE_STMT_FUNCDEC,
+	NODE_STMT_BLOCKEXIT,
 
 	NODE_TYPE_BASIC,
 	NODE_TYPE_POINTER,
@@ -97,6 +98,7 @@ typedef struct ASTNode {
 				Token* lvalue;
 				ASTNode* type; // can be null
 				ASTNode* initial;
+				bool isPublic;
 			} varDec;
 			struct {
 				Token* lvalue;
@@ -106,7 +108,12 @@ typedef struct ASTNode {
 				ASTNode* returnType;
 				ASTNode* body;
 				Scope* scope;
+				bool isPublic;
 			} funcDec;
+			struct {
+				bool isReturn;
+				ASTNode* exitExpr; // can be null;
+			} blockExit;
 		} stmt;
 		union {
 			struct {

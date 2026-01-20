@@ -2,6 +2,7 @@
 
 #include <ctype.h>
 #include <string.h>
+#include "../error/error.h"
 
 Lexer lx;
 
@@ -36,19 +37,44 @@ static TokenType identifierType() {
 	switch (lx.start[0]) {
 		case 'l': return checkKeyword(1, 2, "et", TOK_KEYWORD_LET);
 		case 'm': return checkKeyword(1, 2, "ut", TOK_KEYWORD_MUT);
-		case 'c': return checkKeyword(1, 4, "onst", TOK_KEYWORD_CONST);
 		case 'i': return checkKeyword(1, 1, "f", TOK_KEYWORD_IF);
 		case 'e': return checkKeyword(1, 3, "lse", TOK_KEYWORD_ELSE);
-		case 'f': return checkKeyword(1, 3, "unc", TOK_KEYWORD_FUNC);
 		case 's': return checkKeyword(1, 5, "truct", TOK_KEYWORD_STRUCT);
+		case 'w': return checkKeyword(1, 4, "hile", TOK_KEYWORD_WHILE);
+		case 'r': return checkKeyword(1, 5, "eturn", TOK_KEYWORD_RETURN);
+		case 'b': return checkKeyword(1, 4, "reak", TOK_KEYWORD_BREAK);
+		case 'p': return checkKeyword(1, 2, "ub", TOK_KEYWORD_PUB);
+		case 't': if (lx.current - lx.start > 1) {
+			switch (lx.start[1]) {
+				case 'e': return checkKeyword(2, 2, "st", TOK_KEYWORD_TEST);
+				case 'h': return checkKeyword(2, 2, "en", TOK_KEYWORD_THEN);
+			}
+		} break;
+		case 'c': if (lx.current - lx.start > 1 && lx.start[1] == 'o') {
+			if (lx.current - lx.start > 2 && lx.start[2] == 'n') {
+				if (lx.current - lx.start > 3) {
+					switch (lx.start[3]) {
+						case 's': return checkKeyword(4, 1, "t", TOK_KEYWORD_CONST);
+						case 't': return checkKeyword(4, 4, "inue", TOK_KEYWORD_CONTINUE);
+					}
+				}
+			}
+		} break;
+		case 'f': if (lx.current - lx.start > 1) {
+			switch (lx.start[1]) {
+				case 'u': return checkKeyword(2, 2, "nc", TOK_KEYWORD_FUNC);
+				case 'o': return checkKeyword(2, 1, "r", TOK_KEYWORD_FOR);
+			}
+		} break;
 	}
 	return TOK_IDENT;
 }
 
 bool match(char c) {
-	bool equal = peek(0) == c;
+	if (isEnd()) return false;
+	if (*lx.current != c) return false;
 	advance();
-	return equal;
+	return true;
 }
 
 bool isDigit(char c) {
@@ -65,6 +91,7 @@ bool isEnd() {
 	return *lx.current == '\0';
 }
 char peek(size_t offset) {
+	if (isEnd()) return '\0';
 	return lx.current[offset];
 }
 void advance() {
@@ -74,17 +101,20 @@ void advance() {
 }
 void skipWhitespace() {
 	while (true) {
-		if (isEnd()) break;
-		if (!isspace(peek(0))) break;
-		if (peek(0) == '/' && peek(1) == '/') {
-			while (peek(0) != '\n' && !isEnd()) advance();
-		}
-		if (peek(0) == '\n') {
-			lx.line++;
-			advance();
-			lx.col = 0;
-		} else {
-			advance();
+		switch (peek(0)) {
+			case ' ': case '\t': case '\r': {
+				advance();
+			} break;
+			case '\n': {
+				lx.line++;
+				advance();
+			} break;
+			case '/': {
+				if (peek(1) == '/') {
+					while (peek(0) != '\n' && !isEnd()) advance();
+				} else return;
+			} break;
+			default: return;
 		}
 	}
 }
@@ -94,19 +124,39 @@ Token* nextToken() {
 		return makeToken(TOK_EOF);
 	}
 	lx.start = lx.current;
-	if (isAlpha(peek(0))) {
+	char c = peek(0);
+	if (isAlpha(c)) {
 		while (!isEnd() && isAlphaDigit(peek(0))) {
 			advance();
 		}
 		return makeToken(identifierType());
 	}
-	if (isDigit(peek(0))) {
+	if (isDigit(c)) {
 		while (!isEnd() && isDigit(peek(0))) {
 			advance();
 		}
 		return makeToken(TOK_INT);
 	}
-	char c = peek(0);
+	// if (c == '\'') {
+	// 	advance();
+	// 	if (peek(0) == '\'') {
+	// 		error("Empty character literal", lx.line, lx.col);
+	// 		return makeToken(TOK_CHAR);
+	// 	}
+	// 	char actualChar;
+	// 	if (peek(0) == '\\') {
+	// 		advance();
+	// 		switch (peek(0)) {
+	// 			case '0': 
+	// 		}
+	// 	} else {
+	// 		actualChar = peek(0);
+	// 	}
+	// 	advance();
+	// 	if (peek(0) != '\'') {
+	// 		error("Unclosed character literal", lx.line, lx.col);
+	// 	}
+	// }
 	advance();
 	switch (c) {
 		case '+': return makeToken(TOK_PLUS);
@@ -126,7 +176,7 @@ Token* nextToken() {
 		case ']': return makeToken(TOK_RBRACK);
 		case '{': return makeToken(TOK_LBRACE);
 		case '}': return makeToken(TOK_RBRACE);
-		case '=': return makeToken(match('=') ? TOK_EQ_EQ : TOK_EQ);
+		case '=': return makeToken(match('=') ? TOK_EQ_EQ : match('>') ? TOK_EQ_RARROW : TOK_EQ);
 		default: break;
 	}
 	return makeToken(TOK_UNKNOWN);

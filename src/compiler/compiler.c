@@ -2,7 +2,7 @@
 
 #include "lexer/lexer.h"
 #include "parser/parser.h"
-#include "semantic_analysis/name_res.h"
+#include "semantic_analysis/semantic_analysis.h"
 #include "semantic_analysis/symtable.h"
 #include "codegen/codegen.h"
 #include "ast.h"
@@ -16,7 +16,7 @@ Compiler compiler;
 
 Chunk compile(const char* source, const char* filename) {
 	ArenaAllocator allocator;
-	arenaInit(&allocator, 1024);
+	arenaInit(&allocator, 65536);
 
 	compiler.source = source;
 	compiler.filename = filename;

@@ -1,7 +1,10 @@
 #include "parser.h"
 
+#include "../error/error.h"
+
 ASTNode* parseVarDecl(ArenaAllocator* arena) {
 	ASTNode* stmt = makeNode(arena, NODE_STMT_VARDEC);
+	stmt->data.stmt.varDec.isPublic = false;
 
 	if (lookahead(0)->type == TOK_KEYWORD_CONST) {
 		stmt->data.stmt.varDec.varType = VAR_CONST;
@@ -57,6 +60,7 @@ void parseParamList(
 
 ASTNode* parseFuncDecl(ArenaAllocator* arena) {
 	ASTNode* stmt = makeNode(arena, NODE_STMT_FUNCDEC);
+	stmt->data.stmt.funcDec.isPublic = false;
 	next();
 
 	stmt->data.stmt.funcDec.lvalue = lookahead(0);
@@ -84,8 +88,31 @@ ASTNode* parseStatement(ArenaAllocator* arena) {
 			consume(TOK_SEMICOLON, "Expected ';'");
 			return stmt;
 		}
+		case TOK_KEYWORD_PUB: {
+			next();
+			if (lookahead(0)->type == TOK_KEYWORD_FUNC) {
+				ASTNode* stmt = parseFuncDecl(arena);
+				stmt->data.stmt.funcDec.isPublic = true;
+				return stmt;
+			}
+			if (lookahead(0)->type == TOK_KEYWORD_LET || lookahead(0)->type == TOK_KEYWORD_CONST) {
+				ASTNode* stmt = parseVarDecl(arena);
+				stmt->data.stmt.varDec.isPublic = true;
+				return stmt;
+			}
+			errorFromCause("Expected a declaration", lookahead(0));
+			next();
+		}
 		case TOK_KEYWORD_FUNC: {
 			return parseFuncDecl(arena);
+		}
+		case TOK_KEYWORD_BREAK: case TOK_KEYWORD_RETURN: {
+			ASTNode* stmt = makeNode(arena, NODE_STMT_BLOCKEXIT);
+			stmt->data.stmt.blockExit.isReturn = lookahead(0)->type == TOK_KEYWORD_RETURN;
+			next();
+			stmt->data.stmt.blockExit.exitExpr = parseExpression(arena);
+			consume(TOK_SEMICOLON, "Expected ';'");
+			return stmt;
 		}
 		default: {
 			ASTNode* stmt = parseExpression(arena);
