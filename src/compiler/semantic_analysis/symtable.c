@@ -35,7 +35,7 @@ Symbol* scopeLookupCurrent(Scope* scope, const char* name) {
 	return NULL;
 }
 
-bool scopeAddSymbol(ArenaAllocator* arena, Scope* scope, const char* name, VarDeclType varType, ASTNode* type) {
+bool scopeAddSymbol(ArenaAllocator* arena, Scope* scope, const char* name, VarDeclType varType, AstNode* type) {
 	Symbol* existing = scopeLookupCurrent(scope, name);
 	if (existing != NULL) {
 		return false;

@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-Chunk generateBytecode(ASTNode* ast) {
+Chunk generateBytecode(AstNode* ast) {
 	if (ast->type != NODE_STMT_PROGRAM) {
 		error("Argument to bytecode not a program", 0, 0);
 	}
@@ -23,7 +23,7 @@ Chunk generateBytecode(ASTNode* ast) {
 	return bytecode;
 }
 
-void genExpression(Chunk* chunk, ASTNode* expr) {
+void genExpression(Chunk* chunk, AstNode* expr) {
 	switch (expr->type) {
 		case NODE_EXPR_LITERAL: {
 			switch (expr->data.expr.literal.type) {
@@ -51,10 +51,10 @@ void genExpression(Chunk* chunk, ASTNode* expr) {
 			genExpression(chunk, expr->data.expr.binaryOp.rhs);
 			genExpression(chunk, expr->data.expr.binaryOp.lhs);
 			switch (expr->data.expr.binaryOp.op) {
-				case BINOP_ADD: {
+				case OPT_ADD: {
 					writeChunk(chunk, OP_ADD, expr->token->line);
 				} break;
-				case BINOP_SUBTRACT: {
+				case OPT_SUB: {
 					writeChunk(chunk, OP_SUBTRACT, expr->token->line);
 				} break;
 				default: {

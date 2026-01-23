@@ -3,5 +3,5 @@
 #include "vm/chunk.h"
 #include "compiler/ast.h"
 
-Chunk generateBytecode(ASTNode* ast);
-void genExpression(Chunk* chunk, ASTNode* expr);
+Chunk generateBytecode(AstNode* ast);
+void genExpression(Chunk* chunk, AstNode* expr);

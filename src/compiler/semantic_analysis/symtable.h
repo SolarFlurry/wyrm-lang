@@ -4,11 +4,11 @@
 #include "utils/memory.h"
 #include "../ast.h"
 
-typedef struct ASTNode ASTNode;
+typedef struct AstNode AstNode;
 
 typedef struct {
 	const char* name;
-	ASTNode* type;
+	AstNode* type;
 	VarDeclType varType;
 } Symbol;
 
@@ -23,4 +23,4 @@ typedef struct Scope {
 void initScope(ArenaAllocator* arena, Scope* scope, Scope* parent);
 Symbol* scopeLookup(Scope* scope, const char* name);
 Symbol* scopeLookupCurrent(Scope* scope, const char* name);
-bool scopeAddSymbol(ArenaAllocator* arena, Scope* scope, const char* name, VarDeclType varType, ASTNode* type);
+bool scopeAddSymbol(ArenaAllocator* arena, Scope* scope, const char* name, VarDeclType varType, AstNode* type);

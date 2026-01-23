@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-void printAST(ASTNode* ast, int indent) {
+void printAST(AstNode* ast, int indent) {
 	for (int i = 0; i < indent; i++) { printf("  "); }
 	printf("└ \x1b[36m");
 
@@ -55,7 +55,7 @@ void printAST(ASTNode* ast, int indent) {
 			printAST(ast->data.expr.binaryOp.rhs, indent + 1);
 		} break;
 		default: {
-			printf("Unknown ASTNode type...\n");
+			printf("Unknown ASTNode type...\x1b[0m\n");
 		}
 	}
 }

@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 Compiler compiler;
 
@@ -21,8 +22,9 @@ Chunk compile(const char* source, const char* filename) {
 	compiler.source = source;
 	compiler.filename = filename;
 	
+	clock_t parseStart = clock();
 	initLexer(&allocator, source);
-	ASTNode* ast = parse(&allocator);
+	AstNode* ast = parse(&allocator);
 	printf("Arena allocated %lu bytes\n", allocator.totalAllocated);
 
 	if (errorsCount() > 0) {
@@ -30,6 +32,7 @@ Chunk compile(const char* source, const char* filename) {
 		arenaDestroy(&allocator);
 		exit(1);
 	}
+	printf("Parsing finished in %f seconds\n", (double)(clock() - parseStart)/CLOCKS_PER_SEC);
 
 	printAST(ast, 0);
 

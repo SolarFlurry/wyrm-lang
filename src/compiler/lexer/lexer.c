@@ -108,6 +108,7 @@ void skipWhitespace() {
 			case '\n': {
 				lx.line++;
 				advance();
+				lx.col = 0;
 			} break;
 			case '/': {
 				if (peek(1) == '/') {

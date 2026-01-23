@@ -2,13 +2,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 #include "../error/error.h"
 
 Token* parseTok;
 
-ASTNode* makeNode(ArenaAllocator* arena, NodeType type) {
-	ASTNode* ast = arenaAlloc(arena, sizeof(ASTNode));
+AstNode* makeNode(ArenaAllocator* arena, NodeType type) {
+	AstNode* ast = arenaAlloc(arena, sizeof(AstNode));
 	ast->type = type;
 	ast->token = parseTok;
 	return ast;
@@ -23,6 +24,11 @@ void consume(TokenType type, const char* message) {
 		errorFromCause(message, parseTok);
 	} else next();
 }
+void consumeUntil(TokenType type) {
+	while (lookahead(0)->type != type) {
+		next();
+	}
+}
 void next() {
 	parseTok = nextToken();
 }
@@ -31,18 +37,19 @@ Token* lookahead(size_t offset) {
 	return parseTok;
 }
 
-ASTNode* parse(ArenaAllocator* arena) {
+AstNode* parse(ArenaAllocator* arena) {
 	parseTok = nextToken();
 
-	GrowableArray stmts = growableArrayCreate(arena, sizeof(ASTNode*));
+	GrowableArray stmts = growableArrayCreate(arena, sizeof(AstNode*));
 
 	while (lookahead(0)->type != TOK_EOF) {
-		ASTNode* stmt = parseStatement(arena);
-		ASTNode** slot = (ASTNode**)growableArrayPush(&stmts);
+		AstNode* stmt = parseStatement(arena);
+		
+		AstNode** slot = (AstNode**)growableArrayPush(&stmts);
 		*slot = stmt;
 	}
 
-	ASTNode* program = arenaAlloc(arena, sizeof(ASTNode));
+	AstNode* program = arenaAlloc(arena, sizeof(AstNode));
 
 	program->type = NODE_STMT_PROGRAM;
 	program->data.stmt.program.stmts = stmts.data;

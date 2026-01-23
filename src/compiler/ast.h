@@ -3,7 +3,7 @@
 #include "utils/common.h"
 #include "token.h"
 
-typedef struct ASTNode ASTNode;
+typedef struct AstNode AstNode;
 typedef struct Scope Scope;
 
 typedef enum {
@@ -11,6 +11,7 @@ typedef enum {
 	NODE_EXPR_IDENT,
 	NODE_EXPR_BLOCK,
 	NODE_EXPR_TUPLE,
+	NODE_EXPR_CALL,
 	NODE_EXPR_BINOP,
 	NODE_EXPR_UNOP,
 	NODE_EXPR_LAMBDA,
@@ -41,17 +42,16 @@ typedef enum {
 } LiteralType;
 
 typedef enum {
-	BINOP_CALL,
-	BINOP_ADD,
-	BINOP_SUBTRACT,
-} BinaryOp;
+	OPT_ADD,
+	OPT_SUB,
+	OPT_MUL,
+	OPT_DIV,
+	OPT_MOD,
+	OPT_CONCAT,
+	OPT_NEGATE,
+} OpType;
 
-typedef enum {
-	UNOP_INDEX,
-	UNOP_NEGATE,
-} UnaryOp;
-
-typedef struct ASTNode {
+typedef struct AstNode {
 	NodeType type;
 	Token* token;
 	union {
@@ -60,59 +60,64 @@ typedef struct ASTNode {
 				LiteralType type;
 			} literal;
 			struct {
-				ASTNode** stmts;
+				AstNode** stmts;
 				Scope* scope;
 			} block;
 			struct {
-				ASTNode** fields;
+				AstNode** fields;
 				size_t length;
 			} tuple;
 			struct {
-				BinaryOp op;
-				ASTNode* lhs;
-				ASTNode* rhs;
+				AstNode* func;
+				AstNode** args;
+				size_t argsCount;
+			} funcCall;
+			struct {
+				OpType op;
+				AstNode* lhs;
+				AstNode* rhs;
 			} binaryOp;
 			struct {
-				UnaryOp op;
-				ASTNode* operand;
+				OpType op;
+				AstNode* operand;
 			} unaryOp;
 			struct {
 				Token** paramNames;
-				ASTNode** paramTypes;
+				AstNode** paramTypes;
 				size_t paramCount;
-				ASTNode* body;
+				AstNode* body;
 			} lambda;
 			struct {
-				ASTNode* condition;
-				ASTNode* trueBranch;
-				ASTNode* falseBranch; // can be null
+				AstNode* condition;
+				AstNode* trueBranch;
+				AstNode* falseBranch; // can be null
 			} ifExpr;
 		} expr;
 		union {
 			struct {
-				ASTNode** stmts;
+				AstNode** stmts;
 				size_t stmtCount;
 			} program;
 			struct {
 				VarDeclType varType;
 				Token* lvalue;
-				ASTNode* type; // can be null
-				ASTNode* initial;
+				AstNode* type; // can be null
+				AstNode* initial;
 				bool isPublic;
 			} varDec;
 			struct {
 				Token* lvalue;
-				ASTNode** paramTypes;
+				AstNode** paramTypes;
 				size_t paramCount;
 				Token** paramNames;
-				ASTNode* returnType;
-				ASTNode* body;
+				AstNode* returnType;
+				AstNode* body;
 				Scope* scope;
 				bool isPublic;
 			} funcDec;
 			struct {
 				bool isReturn;
-				ASTNode* exitExpr; // can be null;
+				AstNode* exitExpr; // can be null;
 			} blockExit;
 		} stmt;
 		union {
@@ -120,23 +125,23 @@ typedef struct ASTNode {
 				char* name;
 			} basic;
 			struct {
-				ASTNode* pointee;
+				AstNode* pointee;
 			} pointer;
 			struct {
-				ASTNode* type;
-				ASTNode* size;
+				AstNode* type;
+				AstNode* size;
 			} array;
 			struct {
-				ASTNode** fieldTypes;
+				AstNode** fieldTypes;
 				size_t fieldCount;
 			} tuple;
 			struct {
-				ASTNode** paramTypes;
+				AstNode** paramTypes;
 				size_t paramCount;
-				ASTNode* returnType;
+				AstNode* returnType;
 			} function;
 		} type;
 	} data;
-} ASTNode;
+} AstNode;
 
-void printAST(ASTNode* ast, int indent);
+void printAST(AstNode* ast, int indent);
