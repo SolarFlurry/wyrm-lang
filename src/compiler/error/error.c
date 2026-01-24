@@ -67,7 +67,7 @@ static void printError(ErrorInformation info) {
 	for (int i = 0; i < info.col; i++) {
 		putchar(' ');
 	}
-	printf("\x1b[1;32m");
+	printf("\x1b[1;92m");
 	for (int i = 0; i < info.length; i++) {
 		putchar('^');
 	}

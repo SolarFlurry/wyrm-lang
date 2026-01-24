@@ -24,6 +24,16 @@ void printAST(AstNode* ast, int indent) {
 			}
 			printAST(ast->data.stmt.varDec.initial, indent + 1);
 		} break;
+		case NODE_STMT_FUNCDEC: {
+			printf("FuncDecl\x1b[0m => \x1b[35m'");
+			for (int i = 0; i < ast->data.stmt.funcDec.lvalue->length; i++) {
+				putchar(ast->data.stmt.funcDec.lvalue->start[i]);
+			}
+			puts("'\x1b[0m");
+			for (int i = 0; i < ast->data.stmt.funcDec.stmtCount; i++) {
+				printAST(ast->data.stmt.funcDec.stmts[i], indent + 1);
+			}
+		} break;
 		case NODE_EXPR_IDENT: {
 			printf("Identifier\x1b[0m => \x1b[35m'");
 			for (int i = 0; i < ast->token->length; i++) {
@@ -53,6 +63,12 @@ void printAST(AstNode* ast, int indent) {
 			printf("'\n");
 			printAST(ast->data.expr.binaryOp.lhs, indent + 1);
 			printAST(ast->data.expr.binaryOp.rhs, indent + 1);
+		} break;
+		case NODE_EXPR_BLOCK: {
+			printf("Block\x1b[0m\n");
+			for (int i = 0; i < ast->data.expr.block.stmtCount; i++) {
+				printAST(ast->data.expr.block.stmts[i], indent + 1);
+			}
 		} break;
 		default: {
 			printf("Unknown ASTNode type...\x1b[0m\n");

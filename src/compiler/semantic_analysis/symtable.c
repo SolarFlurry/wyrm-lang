@@ -7,9 +7,14 @@ void initScope(ArenaAllocator* arena, Scope* scope, Scope* parent) {
 	scope->parent = parent;
 	scope->depth = parent == NULL ? 0 : parent->depth + 1;
 
+	if (parent != NULL) {
+		Scope** slot = (Scope**)growableArrayPush(&parent->children);
+		*slot = scope;
+	}
+
 	scope->isFuncScope = false;
 
-	scope->children = growableArrayCreate(arena, sizeof(Scope));
+	scope->children = growableArrayCreate(arena, sizeof(Scope*));
 	scope->symbols = growableArrayCreate(arena, sizeof(Symbol));
 }
 
@@ -35,7 +40,14 @@ Symbol* scopeLookupCurrent(Scope* scope, const char* name) {
 	return NULL;
 }
 
-bool scopeAddSymbol(ArenaAllocator* arena, Scope* scope, const char* name, VarDeclType varType, AstNode* type) {
+bool scopeAddSymbol(
+	ArenaAllocator* arena,
+	Scope* scope,
+	const char* name,
+	VarDeclType varType,
+	AstNode* type,
+	AstNode* constValue
+) {
 	Symbol* existing = scopeLookupCurrent(scope, name);
 	if (existing != NULL) {
 		return false;
@@ -46,6 +58,7 @@ bool scopeAddSymbol(ArenaAllocator* arena, Scope* scope, const char* name, VarDe
 	symbol->name = name;
 	symbol->type = type;
 	symbol->varType = varType;
+	symbol->constValue = constValue;
 
 	return true;
 }

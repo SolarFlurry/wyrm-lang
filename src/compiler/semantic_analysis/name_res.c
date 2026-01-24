@@ -12,7 +12,7 @@ static void resolveNode(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 			
 			Token* lvalue = ast->data.stmt.varDec.lvalue;
 			char* s = createOwnedString(arena, lvalue->start, lvalue->length);
-			bool result = scopeAddSymbol(arena, scope, s, VAR_CONST, ast->data.stmt.varDec.type);
+			bool result = scopeAddSymbol(arena, scope, s, VAR_CONST, ast->data.stmt.varDec.type, NULL);
 			if (!result) {
 				errorFromCause("Redefinition of symbol", lvalue);
 				return;
@@ -26,7 +26,8 @@ static void resolveNode(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 			type->data.type.function.paramCount = ast->data.stmt.funcDec.paramCount;
 			type->data.type.function.paramTypes = ast->data.stmt.funcDec.paramTypes;
 			type->data.type.function.returnType = ast->data.stmt.funcDec.returnType;
-			bool result = scopeAddSymbol(arena, scope, s, VAR_CONST, type);
+
+			bool result = scopeAddSymbol(arena, scope, s, VAR_CONST, type, NULL);
 			if (!result) {
 				errorFromCause("Redefinition of symbol", lvalue);
 				return;

@@ -82,7 +82,18 @@ AstNode* parseFuncDecl(ArenaAllocator* arena) {
 	stmt->data.stmt.funcDec.paramTypes = (AstNode**)paramTypes.data;
 	stmt->data.stmt.funcDec.paramCount = paramNames.length;
 
-	stmt->data.stmt.funcDec.body = parseBlock(arena);
+	consume(TOK_LBRACE, "Expected '{'");
+
+	GrowableArray stmts = growableArrayCreate(arena, sizeof(AstNode*));
+
+	while (lookahead(0)->type != TOK_RBRACE) {
+		AstNode* stmt = parseStatement(arena);
+		AstNode** slot = (AstNode**)growableArrayPush(&stmts);
+		*slot = stmt;
+	}
+	next();
+	stmt->data.stmt.funcDec.stmts = (AstNode**)stmts.data;
+	stmt->data.stmt.funcDec.stmtCount = stmts.length;
 
 	return stmt;
 }

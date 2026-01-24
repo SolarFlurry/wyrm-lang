@@ -60,7 +60,11 @@ typedef struct AstNode {
 				LiteralType type;
 			} literal;
 			struct {
+				char* name;
+			} ident;
+			struct {
 				AstNode** stmts;
+				size_t stmtCount;
 				Scope* scope;
 			} block;
 			struct {
@@ -111,7 +115,8 @@ typedef struct AstNode {
 				size_t paramCount;
 				Token** paramNames;
 				AstNode* returnType;
-				AstNode* body;
+				AstNode** stmts;
+				size_t stmtCount;
 				Scope* scope;
 				bool isPublic;
 			} funcDec;

@@ -166,6 +166,7 @@ AstNode* parseBlock(ArenaAllocator* arena) {
 	}
 	next();
 	block->data.expr.block.stmts = (AstNode**)stmts.data;
+	block->data.expr.block.stmtCount = stmts.length;
 
 	return block;
 }
@@ -206,6 +207,7 @@ AstNode* parseAtom(ArenaAllocator* arena) {
 		}
 		case TOK_IDENT: {
 			AstNode* identifier = makeNode(arena, NODE_EXPR_IDENT);
+			identifier->data.expr.ident.name = createOwnedString(arena, lookahead(0)->start, lookahead(0)->length);
 			next();
 			return identifier;
 		}

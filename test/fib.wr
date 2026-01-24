@@ -1,13 +1,13 @@
 func fib(depth: i32) -> i32 {
 	if depth == 0 {
 		return 0;
-	}
+	};
 	if (depth == 1) {
 		return 1;
-	}
+	};
 	return fib(depth-1) + fib(depth-2);
 }
 
 pub func main () {
-	assert fib(20) == 6765;
+	assert(fib(20) == 6765);
 }

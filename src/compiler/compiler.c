@@ -39,6 +39,7 @@ Chunk compile(const char* source, const char* filename) {
 	Scope topScope;
 	initScope(&allocator, &topScope, NULL);
 	resolveNames(&allocator, ast, &topScope);
+	typeCheck(&allocator, ast, &topScope);
 
 	if (errorsCount() > 0) {
 		printErrors();
