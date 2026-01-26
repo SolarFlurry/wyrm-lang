@@ -32,7 +32,7 @@ Symbol* scopeLookup(Scope* scope, const char* name) {
 
 Symbol* scopeLookupCurrent(Scope* scope, const char* name) {
 	for (int i = 0; i < scope->symbols.length; i++) {
-		Symbol* symbol = (Symbol*)scope->symbols.data + i * sizeof(Symbol);
+		Symbol* symbol = (Symbol*)growableArrayGet(&scope->symbols, i);
 		if (strcmp(name, symbol->name) == 0) {
 			return symbol;
 		}

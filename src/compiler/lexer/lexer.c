@@ -158,6 +158,14 @@ Token* nextToken() {
 	// 		error("Unclosed character literal", lx.line, lx.col);
 	// 	}
 	// }
+	if (c == '"') {
+		advance();
+		lx.start = lx.current;
+		while (!isEnd() && peek(0) != '"') advance();
+		Token* tok = makeToken(TOK_STRING);
+		advance();
+		return tok;
+	}
 	advance();
 	switch (c) {
 		case '+': return makeToken(TOK_PLUS);
@@ -178,7 +186,9 @@ Token* nextToken() {
 		case '{': return makeToken(TOK_LBRACE);
 		case '}': return makeToken(TOK_RBRACE);
 		case '=': return makeToken(match('=') ? TOK_EQ_EQ : match('>') ? TOK_EQ_RARROW : TOK_EQ);
+		case '@': return makeToken(TOK_AT);
 		default: break;
 	}
+	error("Unexpected character", lx.line, lx.col-1);
 	return makeToken(TOK_UNKNOWN);
 }

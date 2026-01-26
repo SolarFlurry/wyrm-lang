@@ -12,6 +12,7 @@ typedef enum {
 	NODE_EXPR_BLOCK,
 	NODE_EXPR_TUPLE,
 	NODE_EXPR_CALL,
+	NODE_EXPR_BUILTIN,
 	NODE_EXPR_BINOP,
 	NODE_EXPR_UNOP,
 	NODE_EXPR_LAMBDA,
@@ -51,6 +52,16 @@ typedef enum {
 	OPT_NEGATE,
 } OpType;
 
+typedef enum {
+	BINOP_ACCESS,
+	BINOP_CAST,
+	BINOP_BITWISE,
+	BINOP_ARITHMETIC,
+	BINOP_COMPARISON,
+	BINOP_LOGICAL,
+	BINOP_ASSIGNMENT,
+} BinOpCategory;
+
 typedef struct AstNode {
 	NodeType type;
 	Token* token;
@@ -77,6 +88,12 @@ typedef struct AstNode {
 				size_t argsCount;
 			} funcCall;
 			struct {
+				Token* builtin;
+				AstNode** args;
+				size_t argsCount;
+			} builtinCall;
+			struct {
+				BinOpCategory category;
 				OpType op;
 				AstNode* lhs;
 				AstNode* rhs;

@@ -54,6 +54,7 @@ typedef enum {
 	TOK_DOT_DOT,
 	TOK_BANG, // !
 	TOK_BANG_EQ, // !
+	TOK_AT,
 
 	TOK_LPAREN,
 	TOK_RPAREN,

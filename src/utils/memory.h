@@ -40,6 +40,7 @@ char* createOwnedString(ArenaAllocator* arena, const char* str, size_t length);
 Buffer* bufferCreate(size_t initialSize);
 
 GrowableArray growableArrayCreate(ArenaAllocator* arena, size_t itemSize);
+void* growableArrayGet(GrowableArray* growableArray, size_t index);
 void* growableArrayPush(GrowableArray* growableArray);
 
 void* reallocate(void* ptr, size_t newSize);

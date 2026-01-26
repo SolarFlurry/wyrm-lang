@@ -72,6 +72,13 @@ GrowableArray growableArrayCreate(ArenaAllocator* arena, size_t itemSize) {
 	return growableArray;
 }
 
+void* growableArrayGet(GrowableArray* growableArray, size_t index) {
+	if (index >= growableArray->length) {
+		return NULL;
+	}
+	return growableArray->data + index*growableArray->itemSize;
+}
+
 void* growableArrayPush(GrowableArray* growableArray) {
 	if (growableArray->length >= growableArray->capacity) {
 		growableArray->capacity = GROW_CAPACITY(growableArray->capacity);

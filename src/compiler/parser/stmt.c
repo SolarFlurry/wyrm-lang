@@ -112,7 +112,7 @@ AstNode* parseStatement(ArenaAllocator* arena) {
 				stmt->data.stmt.funcDec.isPublic = true;
 				return stmt;
 			}
-			if (lookahead(0)->type == TOK_KEYWORD_LET || lookahead(0)->type == TOK_KEYWORD_CONST) {
+			if (lookahead(0)->type == TOK_KEYWORD_CONST) {
 				AstNode* stmt = parseVarDecl(arena);
 				stmt->data.stmt.varDec.isPublic = true;
 				return stmt;

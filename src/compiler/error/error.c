@@ -5,8 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-ErrorInformation errors[MAX_ERRORS];
-size_t errorCount = 0;
+static ErrorInformation errors[MAX_ERRORS];
+static ErrorInformation warnings[MAX_ERRORS];
+static size_t errorCount = 0;
+static size_t warningCount = 0;
 
 static char* getLine(uint32_t lineNum) {
 	const char* lineStart = getSource();
@@ -47,15 +49,30 @@ void errorFromCause(const char* message, Token* cause) {
 	}
 	errors[errorCount++] = (ErrorInformation) { cause->line, cause->col, cause->length, message };
 }
+void warn(const char* message, uint32_t line, uint32_t col) {
+	if (warningCount >= MAX_ERRORS) {
+		printf("exceeded max warnings");
+		return;
+	}
+	warnings[warningCount++] = (ErrorInformation) { line, col, 1, message };
+}
+void warnFromCause(const char* message, Token* cause) {
+	if (warningCount >= MAX_ERRORS) {
+		printf("exceeded max errors");
+		return;
+	}
+	warnings[warningCount++] = (ErrorInformation) { cause->line, cause->col, cause->length, message };
+}
 
 size_t errorsCount() {
 	return errorCount;
 }
 
-static void printError(ErrorInformation info) {
+static void printError(ErrorInformation info, bool isWarn) {
 	char* line = getLine(info.line);
 	printf(
-		"\x1b[1;31m[Error]\x1b[0m: %s\n--> %s:%u:%u\n%4u | %s\n       ",
+		"%s\x1b[0m: %s\n \x1b[34;1m-->\x1b[0;2;3m %s:%u:%u\x1b[0m\n\x1b[34;1m%4u |\x1b[0m %s\n       ",
+		isWarn ? "\x1b[33;1m[Warning]" : "\x1b[31;1m[Error]",
 		info.message,
 		getFilename(),
 		info.line+1,
@@ -71,13 +88,17 @@ static void printError(ErrorInformation info) {
 	for (int i = 0; i < info.length; i++) {
 		putchar('^');
 	}
-	printf("\x1b[0m Error occured here\n");
+	printf(" %s occured here\x1b[0m\n", isWarn ? "Warning" : "Error");
 }
 
 void printErrors() {
 	putchar('\n');
+	for (int i = 0; i < warningCount; i++) {
+		printError(warnings[i], true);
+		putchar('\n');
+	}
 	for (int i = 0; i < errorCount; i++) {
-		printError(errors[i]);
+		printError(errors[i], false);
 		putchar('\n');
 	}
 }

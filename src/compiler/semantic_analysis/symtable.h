@@ -11,6 +11,7 @@ typedef struct {
 	AstNode* type;
 	AstNode* constValue;
 	VarDeclType varType;
+	int funcIndex;
 } Symbol;
 
 typedef struct Scope {

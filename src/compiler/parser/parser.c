@@ -21,6 +21,7 @@ void consume(TokenType type, const char* message) {
 			printErrors();
 			exit(1);
 		}
+		if (parseTok->type == TOK_UNKNOWN) return;
 		errorFromCause(message, parseTok);
 	} else next();
 }

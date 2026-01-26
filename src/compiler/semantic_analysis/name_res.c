@@ -12,6 +12,12 @@ static void resolveNode(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 			
 			Token* lvalue = ast->data.stmt.varDec.lvalue;
 			char* s = createOwnedString(arena, lvalue->start, lvalue->length);
+
+			AstNode* initialType = typecheckExpr(arena, ast->data.stmt.varDec.initial, scope);
+			if (ast->data.stmt.varDec.type && !typeEquals(ast->data.stmt.varDec.type, initialType)) {
+				errorFromCause("Specified type does not match type of initial", lvalue);
+			}
+
 			bool result = scopeAddSymbol(arena, scope, s, VAR_CONST, ast->data.stmt.varDec.type, NULL);
 			if (!result) {
 				errorFromCause("Redefinition of symbol", lvalue);

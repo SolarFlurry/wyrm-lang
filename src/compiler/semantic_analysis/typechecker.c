@@ -2,6 +2,7 @@
 
 #include "../error/error.h"
 #include <string.h>
+#include <stdio.h>
 
 bool typeEquals(AstNode* type, AstNode* type2) {
 	if (type == type2) {
@@ -52,7 +53,7 @@ void typecheckVarDec(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 			if (scope->isFuncScope) {
 				errorFromCause("Cannot have a const binding in a function body", ast->token);
 			}
-		}
+		} break;
 	}
 }
 
@@ -80,7 +81,10 @@ void typecheckStmt(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 			typecheckFuncDec(arena, ast, scope);
 		} break;
 		default: {
-			typecheckExpr(arena, ast, scope);
+			AstNode* type = typecheckExpr(arena, ast, scope);
+			if (type != NULL) {
+				warn("Unused result of expression", ast->token->line, ast->token->col);
+			}
 		}
 	}
 }

@@ -14,5 +14,7 @@ typedef struct {
 
 void error(const char* message, uint32_t line, uint32_t col);
 void errorFromCause(const char* message, Token* cause);
+void warn(const char* message, uint32_t line, uint32_t col);
+void warnFromCause(const char* message, Token* cause);
 void printErrors();
 size_t errorsCount();

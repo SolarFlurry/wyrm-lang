@@ -1,4 +1,3 @@
 pub func main () {
-	let yo: bool = 3;
-	yo;
+	1 + 2;
 }

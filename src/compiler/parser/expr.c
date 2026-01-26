@@ -34,7 +34,9 @@ static BindingPower infixBp(TokenType op) {
 		case TOK_PIPE:
 			return (BindingPower){11, 12};
 		
-		case TOK_DOT: return (BindingPower){17, 18};
+		case TOK_DOT:
+		case TOK_COLON_COLON:
+			return (BindingPower){17, 18};
 
 		default: return (BindingPower){0, 0};
 	}
@@ -67,6 +69,33 @@ static OpType getOp(TokenType op) {
 		case TOK_PLUS: return OPT_ADD;
 		case TOK_MINUS: return OPT_SUB;
 		default: return /* unreachable */ OPT_ADD;
+	}
+}
+
+static BinOpCategory getCategory(TokenType op) {
+	switch (op) {
+		case TOK_DOT:
+		case TOK_COLON_COLON:
+			return BINOP_ACCESS;
+		case TOK_AMP:
+		case TOK_PIPE:
+			return BINOP_BITWISE;
+		case TOK_PLUS:
+		case TOK_MINUS:
+		case TOK_ASTERISK:
+		case TOK_SLASH:
+		case TOK_PERCENT:
+			return BINOP_ARITHMETIC;
+		case TOK_LARROW:
+		case TOK_RARROW:
+		case TOK_LARROW_EQ:
+		case TOK_RARROW_EQ:
+		case TOK_EQ_EQ:
+		case TOK_BANG_EQ:
+			return BINOP_COMPARISON;
+		case TOK_EQ:
+			return BINOP_ASSIGNMENT;
+		default: {} // do nothing
 	}
 }
 
@@ -129,6 +158,7 @@ static AstNode* parseExprBP(ArenaAllocator* arena, int minBP) {
 		AstNode* binOp = makeNode(arena, NODE_EXPR_BINOP);
 		binOp->data.expr.binaryOp.lhs = lhs;
 		binOp->data.expr.binaryOp.op = getOp(lookahead(0)->type);
+		binOp->data.expr.binaryOp.category = getCategory(lookahead(0)->type);
 
 		next();
 
@@ -202,6 +232,21 @@ AstNode* parseAtom(ArenaAllocator* arena) {
 			expr->data.expr.tuple.fields = (AstNode**)tuple.data;
 			expr->data.expr.tuple.length = tuple.length;
 		}
+		case TOK_AT: {
+			AstNode* expr = makeNode(arena, NODE_EXPR_BUILTIN);
+			next();
+			expr->data.expr.builtinCall.builtin = lookahead(0);
+			consume(TOK_IDENT, "Expected an identifier");
+			consume(TOK_LPAREN, "Expected '('");
+			GrowableArray args = growableArrayCreate(arena, sizeof(AstNode*));
+
+			parseExpressionList(arena, &args, TOK_RPAREN);
+			next();
+			expr->data.expr.builtinCall.args = (AstNode**)args.data;
+			expr->data.expr.builtinCall.argsCount = args.length;
+
+			return expr;
+		}
 		case TOK_LBRACE: {
 			return parseBlock(arena);
 		}
@@ -217,6 +262,12 @@ AstNode* parseAtom(ArenaAllocator* arena) {
 			next();
 			return literal;
 		}
+		case TOK_STRING: {
+			AstNode* literal = makeNode(arena, NODE_EXPR_LITERAL);
+			literal->data.expr.literal.type = LIT_STRING;
+			next();
+			return literal;
+		}
 		case TOK_KEYWORD_IF: {
 			AstNode* ifExpr = makeNode(arena, NODE_EXPR_IF);
 			next();
@@ -225,7 +276,7 @@ AstNode* parseAtom(ArenaAllocator* arena) {
 				Token* thenToken = lookahead(0);
 				next();
 				if (lookahead(0)->type == TOK_LBRACE) {
-					errorFromCause("Unexpected keyword 'then'", thenToken);
+					warnFromCause("Remove the 'then'", thenToken);
 				}
 				ifExpr->data.expr.ifExpr.trueBranch = parseExpression(arena);
 			} else {
