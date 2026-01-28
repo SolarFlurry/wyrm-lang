@@ -30,7 +30,7 @@ AstNode* parseVarDecl(ArenaAllocator* arena) {
 		stmt->data.stmt.varDec.type = NULL;
 	}
 
-	consume(TOK_EQ, "Expected a '='");
+	consume(TOK_EQ, "Expected '='");
 	stmt->data.stmt.varDec.initial = parseExpression(arena);
 	return stmt;
 }

@@ -53,7 +53,25 @@ AstNode* typecheckExpr(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 				errorFromCause("If expression must have an else clause", ast->token);
 				return NULL;
 			}
+			if (ast->data.expr.ifExpr.falseBranch == NULL) {
+				return NULL;
+			}
+			AstNode* falseType = typecheckExpr(arena, ast->data.expr.ifExpr.falseBranch, scope);
+			if (!typeEquals(trueType, falseType)) {
+				errorFromCause("Return types of true and false branches do not match", ast->token);
+				return NULL;
+			}
+			return trueType;
 		}
-		default: return NULL;
+		case NODE_EXPR_BLOCK: {
+			Scope* blockScope = (Scope*)arenaAlloc(arena, sizeof(Scope));
+			initScope(arena, blockScope, scope);
+			ast->data.expr.block.scope = blockScope;
+			for (int i = 0; i < ast->data.expr.block.stmtCount; i++) {
+				typecheckStmt(arena, ast->data.expr.block.stmts[i], blockScope);
+			}
+			return NULL;
+		}
+		default: errorFromCause("cannot typecheck", ast->token);
 	}
 }

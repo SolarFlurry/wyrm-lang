@@ -28,6 +28,8 @@ InterpretResult evaluate(Chunk* chunk) {
 	vm.chunk = chunk;
 	vm.ip = vm.chunk->bytecode;
 	#define READ_BYTE() (*vm.ip++)
+	#define READ_SHORT() \
+		(vm.ip += 2, (uint16_t)((vm.ip[-2] << *8) | vm.ip[-1]))
 	#define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
 
 	while (true) {
@@ -38,11 +40,19 @@ InterpretResult evaluate(Chunk* chunk) {
 				Value constant = READ_CONSTANT();
 				push(constant);
 			} break;
+			case OP_POP: pop(); break;
+			case OP_GET_LOCAL: {
+				push(vm.stack[READ_BYTE()]);
+			} break;
 			case OP_ADD: {
 				push((Value){.as = pop().as.i32 + pop().as.i32});
 			} break;
 			case OP_SUBTRACT: {
 				push((Value){.as = pop().as.i32 - pop().as.i32});
+			} break;
+			case OP_CALL: {
+				uint16_t offset = READ_BYTE();
+				vm.ip += offset;
 			} break;
 			case OP_RETURN: {
 				printValue(pop());
@@ -57,5 +67,6 @@ InterpretResult evaluate(Chunk* chunk) {
 	}
 
 	#undef READ_CONSTANT
+	#undef READ_SHORT
 	#undef READ_BYTE
 }

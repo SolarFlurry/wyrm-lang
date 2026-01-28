@@ -54,7 +54,7 @@ Chunk compile(const char* source, const char* filename) {
 	}
 	printf("Arena allocated %lu bytes\n", allocator.totalAllocated);
 	
-	Chunk bytecode = generateBytecode(ast);
+	Chunk bytecode = generateBytecode(ast, &topScope, &allocator);
 	arenaDestroy(&allocator);
 
 	if (errorsCount() > 0) {

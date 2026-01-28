@@ -42,12 +42,13 @@ void typecheckVarDec(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 
 			AstNode* type = initialType;
 			
-			bool added = scopeAddSymbol(arena, scope, name, VAR_LOCAL, type, NULL);
+			Symbol* added = scopeAddSymbol(arena, scope, name, VAR_LOCAL, type, NULL);
 
-			if (!added) {
+			if (added == NULL) {
 				errorFromCause("Redefinition of variable", lvalue);
 				return;
 			}
+			added->funcIndex = scope->funcIndex++;
 		} break;
 		case VAR_CONST: {
 			if (scope->isFuncScope) {
@@ -83,7 +84,7 @@ void typecheckStmt(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 		default: {
 			AstNode* type = typecheckExpr(arena, ast, scope);
 			if (type != NULL) {
-				warn("Unused result of expression", ast->token->line, ast->token->col);
+				error("Unused result of expression", ast->token->line, ast->token->col);
 			}
 		}
 	}
