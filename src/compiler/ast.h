@@ -43,16 +43,6 @@ typedef enum {
 } LiteralType;
 
 typedef enum {
-	OPT_ADD,
-	OPT_SUB,
-	OPT_MUL,
-	OPT_DIV,
-	OPT_MOD,
-	OPT_CONCAT,
-	OPT_NEGATE,
-} OpType;
-
-typedef enum {
 	BINOP_ACCESS,
 	BINOP_CAST,
 	BINOP_BITWISE,
@@ -94,12 +84,12 @@ typedef struct AstNode {
 			} builtinCall;
 			struct {
 				BinOpCategory category;
-				OpType op;
+				char op;
 				AstNode* lhs;
 				AstNode* rhs;
 			} binaryOp;
 			struct {
-				OpType op;
+				char op;
 				AstNode* operand;
 			} unaryOp;
 			struct {

@@ -77,6 +77,11 @@ void genStmt(AstNode* stmt, Scope* scope) {
 		case NODE_STMT_VARDEC: {
 			genExpression(stmt->data.stmt.varDec.initial, scope);
 		} break;
+		case NODE_STMT_BLOCKEXIT: {
+			if (stmt->data.stmt.blockExit.isReturn) {
+				emitByte(OP_RETURN);
+			}
+		} break;
 		default: {
 			genExpression(stmt, scope);
 		} break;
@@ -111,10 +116,10 @@ void genExpression(AstNode* expr, Scope* scope) {
 			genExpression(expr->data.expr.binaryOp.rhs, scope);
 			genExpression(expr->data.expr.binaryOp.lhs, scope);
 			switch (expr->data.expr.binaryOp.op) {
-				case OPT_ADD: {
+				case '+': {
 					writeChunk(ctx.chunk, OP_ADD);
 				} break;
-				case OPT_SUB: {
+				case '-': {
 					writeChunk(ctx.chunk, OP_SUBTRACT);
 				} break;
 				default: {
@@ -126,6 +131,9 @@ void genExpression(AstNode* expr, Scope* scope) {
 			Symbol* symbol = scopeLookup(scope, expr->data.expr.ident.name);
 			emitByte(OP_GET_LOCAL);
 			emitByte(symbol->funcIndex);
+		} break;
+		case NODE_EXPR_IF: {
+			// uh
 		} break;
 		default: {
 			errorFromCause("not an expression", expr->token);

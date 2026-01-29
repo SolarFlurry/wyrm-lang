@@ -1,0 +1,7 @@
+pub func main () {
+	let x = 10;
+	if x > 8 {
+		let y = 0;
+	};
+	return 0;
+}

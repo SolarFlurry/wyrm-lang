@@ -81,6 +81,9 @@ void typecheckStmt(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 		case NODE_STMT_FUNCDEC: {
 			typecheckFuncDec(arena, ast, scope);
 		} break;
+		case NODE_STMT_BLOCKEXIT: {
+			
+		} break;
 		default: {
 			AstNode* type = typecheckExpr(arena, ast, scope);
 			if (type != NULL) {

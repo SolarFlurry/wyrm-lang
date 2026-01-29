@@ -2,6 +2,7 @@
 
 #include "../error/error.h"
 #include <string.h>
+#include <stdio.h>
 
 AstNode* typecheckExpr(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 	switch (ast->type) {
@@ -40,6 +41,20 @@ AstNode* typecheckExpr(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 						return NULL;
 					}
 					return lhsType;
+				}
+				case BINOP_COMPARISON: {
+					if (!typeEquals(lhsType, rhsType)) {
+						errorFromCause("Operand types mismatch", ast->token);
+						return NULL;
+					}
+					AstNode* type = arenaAlloc(arena, sizeof(AstNode));
+					type->type = NODE_TYPE_BASIC;
+					type->data.type.basic.name = "bool";
+					return type;
+				}
+				default: {
+					errorFromCause("Unknown binop category", ast->token);
+					return NULL;
 				}
 			}
 		}

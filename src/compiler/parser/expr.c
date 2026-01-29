@@ -64,11 +64,15 @@ static BindingPower postfixBp(TokenType op) {
 	}
 }
 
-static OpType getOp(TokenType op) {
+static char getOp(TokenType op) {
 	switch (op) {
-		case TOK_PLUS: return OPT_ADD;
-		case TOK_MINUS: return OPT_SUB;
-		default: return /* unreachable */ OPT_ADD;
+		case TOK_PLUS: return '+';
+		case TOK_MINUS: return '-';
+		case TOK_ASTERISK: return '*';
+		case TOK_SLASH: return '/';
+		case TOK_LARROW: return '<';
+		case TOK_RARROW: return '>';
+		default: return /* unreachable */ ' ';
 	}
 }
 

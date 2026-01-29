@@ -44,8 +44,12 @@ int disassembleInstruction(Chunk* chunk, int offset) {
 			return simpleInstruction("OP_ADD", offset);
 		case OP_SUBTRACT:
 			return simpleInstruction("OP_SUBTRACT", offset);
+		case OP_JUMP:
+			return jumpInstruction("OP_JUMP", 1, chunk, offset);
+		case OP_JUMP_IF_ZERO:
+			return jumpInstruction("OP_JUMP_IF_ZERO", 1, chunk, offset);
 		case OP_CALL:
-			return jumpInstruction("OP_CALL", 1, chunk, offset);
+			return  jumpInstruction("OP_CALL", 1, chunk, offset);
 		case OP_RETURN: 
 			return simpleInstruction("OP_RETURN", offset);
 		default: {

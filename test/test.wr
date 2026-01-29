@@ -1,4 +1,4 @@
-pub func main() {
+pub func main () {
 	let hello = 1 + 2;
 	hello;
 }
