@@ -71,7 +71,7 @@ size_t errorsCount() {
 static void printError(ErrorInformation info, bool isWarn) {
 	char* line = getLine(info.line);
 	printf(
-		"%s\x1b[0m: %s\n \x1b[34;1m-->\x1b[0;2;3m %s:%u:%u\x1b[0m\n\x1b[34;1m%4u |\x1b[0m %s\n       ",
+		"%s\x1b[0m %s\n \x1b[34;1m-->\x1b[0;2;3m %s:%u:%u\x1b[0m\n\x1b[34;1m%4u |\x1b[0m %s\n       ",
 		isWarn ? "\x1b[33;1m[Warning]" : "\x1b[31;1m[Error]",
 		info.message,
 		getFilename(),

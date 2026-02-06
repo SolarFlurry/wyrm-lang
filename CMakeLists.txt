@@ -6,6 +6,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 
 add_executable(wyrm
 	src/main.c
+	src/cli_utils/cli_utils.c
 	src/utils/memory.c
 	src/vm/chunk.c
 	src/vm/debug.c
