@@ -3,10 +3,12 @@ cmake_minimum_required(VERSION 3.31)
 project(wyrm-lang LANGUAGES C CXX)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 add_executable(wyrm
-	src/main.c
-	src/cli_utils/cli_utils.c
+	src/main.cpp
+	src/cli/cli_parser.cpp
 	src/utils/memory.c
 	src/vm/chunk.c
 	src/vm/debug.c
@@ -32,4 +34,5 @@ target_include_directories(wyrm PUBLIC "${CMAKE_SOURCE_DIR}/src")
 add_executable(test
 	src/test.cpp
 )
-target_compile_features(test PRIVATE cxx_std_23)
+
+set_target_properties(wyrm PROPERTIES CMAKE_CXX_RTTI false CMAKE_CXX_EXCEPTIONS false)

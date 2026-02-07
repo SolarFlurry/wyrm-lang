@@ -22,7 +22,15 @@ typedef struct Chunk {
 	int length;
 } Chunk;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void initChunk(Chunk* chunk);
 void writeChunk(Chunk* chunk, uint8_t byte);
 uint8_t addConstant(Chunk* chunk, Value value);
 void freeChunk(Chunk* chunk);
+
+#ifdef __cplusplus
+}
+#endif

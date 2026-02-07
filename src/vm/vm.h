@@ -19,9 +19,17 @@ typedef enum {
 	INTERPRET_RUNTIME_ERROR
 } InterpretResult;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void push(Value value);
 Value pop();
 
 void initVM();
 void freeVM();
 InterpretResult evaluate(Chunk* chunk);
+
+#ifdef __cplusplus
+}
+#endif
