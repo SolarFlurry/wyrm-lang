@@ -72,7 +72,7 @@ int main (int argc, char** argv) {
 	int testsPassed = 0;
 	for (auto file : testFiles.value()) {
 
-		string command = std::format("./bin/wyrm {}", file.string());
+		string command = std::format("./bin/wyrm build {}", file.string());
 		auto [output, status] = executeCommand(command.c_str());
 
 		std::ofstream outputFile(file.replace_extension(".txt"));
