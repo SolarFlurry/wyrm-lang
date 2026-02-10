@@ -2,15 +2,34 @@
 
 #include <stdio.h>
 
-void printAST(AstNode* ast, int indent) {
-	for (int i = 0; i < indent; i++) { printf("  "); }
-	printf("└ \x1b[36m");
+static void printIndent(uint32_t indent, uint64_t has_lines) {
+	for (int i = 0; i < indent; i++) {
+		if ((1 << (indent - i) & has_lines) > 0) {
+			printf("│  ");
+		} else {
+			printf("   ");
+		}
+	}
+}
+
+void printAST(AstNode* ast, uint32_t indent, int indent_type, uint64_t has_lines) {
+	printIndent(indent, has_lines);
+	switch (indent_type) {
+		case 0: printf("   "); break;
+		case 1: printf("├─ "); break;
+		case 2: printf("╰─ "); break;
+	}
+	printf("\x1b[36m");
 
 	switch (ast->type) {
 		case NODE_STMT_PROGRAM: {
 			printf("Program\x1b[0m:\n");
 			for (int i = 0; i < ast->data.stmt.program.stmtCount; i++) {
-				printAST(ast->data.stmt.program.stmts[i], indent + 1);
+				if (i == ast->data.stmt.program.stmtCount - 1) {
+					printAST(ast->data.stmt.program.stmts[i], indent + 1, 2, has_lines << 1);
+					continue;
+				}
+				printAST(ast->data.stmt.program.stmts[i], indent + 1, 1, has_lines << 1 | 1);
 			}
 		} break;
 		case NODE_STMT_VARDEC: {
@@ -20,9 +39,9 @@ void printAST(AstNode* ast, int indent) {
 			}
 			puts("'\x1b[0m");
 			if (ast->data.stmt.varDec.type != NULL) {
-				printAST(ast->data.stmt.varDec.type, indent + 1);
+				printAST(ast->data.stmt.varDec.type, indent + 1, 1, has_lines << 1);
 			}
-			printAST(ast->data.stmt.varDec.initial, indent + 1);
+			printAST(ast->data.stmt.varDec.initial, indent + 1, 2, has_lines << 1);
 		} break;
 		case NODE_STMT_FUNCDEC: {
 			printf("FuncDecl\x1b[0m => \x1b[35m'");
@@ -31,7 +50,11 @@ void printAST(AstNode* ast, int indent) {
 			}
 			puts("'\x1b[0m");
 			for (int i = 0; i < ast->data.stmt.funcDec.stmtCount; i++) {
-				printAST(ast->data.stmt.funcDec.stmts[i], indent + 1);
+				if (i == ast->data.stmt.funcDec.stmtCount - 1) {
+					printAST(ast->data.stmt.funcDec.stmts[i], indent + 1, 2, has_lines << 1);
+					continue;
+				}
+				printAST(ast->data.stmt.funcDec.stmts[i], indent + 1, 1, has_lines << 1 | 1);
 			}
 		} break;
 		case NODE_EXPR_IDENT: {
@@ -61,13 +84,17 @@ void printAST(AstNode* ast, int indent) {
 				putchar(ast->token->start[i]);
 			}
 			printf("'\n");
-			printAST(ast->data.expr.binaryOp.lhs, indent + 1);
-			printAST(ast->data.expr.binaryOp.rhs, indent + 1);
+			printAST(ast->data.expr.binaryOp.lhs, indent + 1, 1, has_lines << 1);
+			printAST(ast->data.expr.binaryOp.rhs, indent + 1, 2, has_lines << 1);
 		} break;
 		case NODE_EXPR_BLOCK: {
 			printf("Block\x1b[0m\n");
 			for (int i = 0; i < ast->data.expr.block.stmtCount; i++) {
-				printAST(ast->data.expr.block.stmts[i], indent + 1);
+				if (i == ast->data.expr.block.stmtCount - 1) {
+					printAST(ast->data.expr.block.stmts[i], indent + 1, 2, has_lines << 1);
+					continue;
+				}
+				printAST(ast->data.expr.block.stmts[i], indent + 1, 1, has_lines << 1 | 1);
 			}
 		} break;
 		default: {

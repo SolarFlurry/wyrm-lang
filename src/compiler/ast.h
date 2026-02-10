@@ -156,4 +156,4 @@ typedef struct AstNode {
 	} data;
 } AstNode;
 
-void printAST(AstNode* ast, int indent);
+void printAST(AstNode* ast, uint32_t indent, int indent_type, uint64_t has_lines);

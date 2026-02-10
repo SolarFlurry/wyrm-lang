@@ -34,7 +34,7 @@ Chunk compile(const char* source, const char* filename) {
 	}
 	printf("Parsing finished in %f seconds\n", (double)(clock() - parseStart)/CLOCKS_PER_SEC);
 
-	printAST(ast, 0);
+	printAST(ast, 0, 0, 0);
 
 	clock_t typecheckStart = clock();
 
