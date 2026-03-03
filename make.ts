@@ -23,6 +23,7 @@ switch (Deno.args[0]) {
 		}
 	} break;
 	case "test": {
+		await build();
 		await $`./bin/test ./tests`;
 	} break;
 	default:

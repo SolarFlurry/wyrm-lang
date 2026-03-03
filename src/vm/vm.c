@@ -53,6 +53,18 @@ InterpretResult evaluate(Chunk* chunk) {
 			case OP_EQUAL: {
 				push((Value){.as = pop().as.i32 == pop().as.i32});
 			} break;
+			case OP_LESS: {
+				push((Value){.as = pop().as.i32 < pop().as.i32});
+			} break;
+			case OP_LESS_EQ: {
+				push((Value){.as = pop().as.i32 <= pop().as.i32});
+			} break;
+			case OP_GREATER: {
+				push((Value){.as = pop().as.i32 > pop().as.i32});
+			} break;
+			case OP_GREATER_EQ: {
+				push((Value){.as = pop().as.i32 >= pop().as.i32});
+			} break;
 			case OP_JUMP: {
 				uint16_t offset = READ_BYTE();
 				vm.ip += offset;

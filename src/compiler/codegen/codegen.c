@@ -148,6 +148,18 @@ void genExpression(AstNode* expr, Scope* scope) {
 				case TOK_EQ_EQ: {
 					writeChunk(ctx.chunk, OP_EQUAL);
 				} break;
+				case TOK_LARROW: {
+					writeChunk(ctx.chunk, OP_LESS);
+				} break;
+				case TOK_LARROW_EQ: {
+					writeChunk(ctx.chunk, OP_LESS_EQ);
+				} break;
+				case TOK_RARROW: {
+					writeChunk(ctx.chunk, OP_GREATER);
+				} break;
+				case TOK_RARROW_EQ: {
+					writeChunk(ctx.chunk, OP_GREATER_EQ);
+				} break;
 				default: {
 					errorFromCause("this operator is not yet supported", expr->token);
 				}
