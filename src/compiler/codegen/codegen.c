@@ -9,8 +9,8 @@
 CodegenContext ctx;
 
 static void emitByte(uint8_t byte) {
-	writeChunk(ctx.chunk, byte);
-}
+		writeChunk(ctx.chunk, byte);
+	}
 
 static int emitJump(uint8_t instruction) {
 	emitByte(instruction);
@@ -28,10 +28,10 @@ static void patchJump(int offset, int with) {
 static void genStmts(int stmtCount, AstNode** stmts, Scope* scope) {
 	for (int i = 0; i < stmtCount; i++) {
 		genStmt(stmts[i], scope);
-	}
+			}
 	for (int i = 0; i < scope->symbols.length; i++) {
 		emitByte(OP_POP);
-	}
+			}
 }
 
 static void initCodegen(CodegenContext* ctx, ArenaAllocator* arena, Chunk* chunk) {
@@ -52,10 +52,10 @@ Chunk generateBytecode(AstNode* ast, Scope* scope, ArenaAllocator* arena) {
 
 	int jump = emitJump(OP_CALL);
 
-	for (int i = 0; i < ast->data.stmt.program.stmtCount; i++) {
+		for (int i = 0; i < ast->data.stmt.program.stmtCount; i++) {
 		genStmt(ast->data.stmt.program.stmts[i], scope);
 	}
-
+	
 	patchJump(jump, ctx.mainLocation);
 
 	return bytecode;
@@ -80,7 +80,7 @@ void genStmt(AstNode* stmt, Scope* scope) {
 				stmt->data.stmt.funcDec.stmts,
 				stmt->data.stmt.funcDec.scope
 			);
-
+			
 			emitByte(OP_RETURN);
 		} break;
 		case NODE_STMT_VARDEC: {
@@ -93,6 +93,9 @@ void genStmt(AstNode* stmt, Scope* scope) {
 		} break;
 		default: {
 			genExpression(stmt, scope);
+			if (stmt->data.expr.unusedResult) {
+				emitByte(OP_POP);
+			}
 		} break;
 	}
 }

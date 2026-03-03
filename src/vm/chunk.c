@@ -1,6 +1,7 @@
 #include "chunk.h"
 
 #include "utils/memory.h"
+#include <stdio.h>
 
 void initChunk(Chunk* chunk) {
 	initValueBuffer(&chunk->constants);
@@ -15,7 +16,7 @@ uint8_t addConstant(Chunk* chunk, Value constant) {
 }
 
 void writeChunk(Chunk* chunk, uint8_t byte) {
-	if (chunk->capacity >= chunk->length) {
+	if (chunk->length >= chunk->capacity) {
 		chunk->capacity = GROW_CAPACITY(chunk->capacity);
 		chunk->bytecode = GROW_BUFFER(uint8_t, chunk->bytecode, chunk->capacity);
 	}

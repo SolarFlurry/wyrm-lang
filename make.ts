@@ -18,8 +18,7 @@ switch (Deno.args[0]) {
 		const result = await $`./bin/wyrm build ${Deno.args.slice(1)}`.noThrow();
 		if (result.code === 139) {
 			console.error("\nSegmentation fault \x1b[2;3m(make.ts)\x1b[0m");
-		}
-		if (result.code === 138) {
+		} else if (result.code === 138) {
 			console.error("\nBus error \x1b[2;3m(make.ts)\x1b[0m");
 		}
 	} break;

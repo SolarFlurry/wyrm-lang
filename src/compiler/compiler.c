@@ -62,6 +62,8 @@ Chunk compile(const char* source, const char* filename) {
 		exit(1);
 	}
 
+	printErrors();
+
 	return bytecode;
 }
 

@@ -86,8 +86,10 @@ void typecheckStmt(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 		} break;
 		default: {
 			AstNode* type = typecheckExpr(arena, ast, scope);
+			ast->data.expr.unusedResult = false;
 			if (type != NULL) {
-				error("Unused result of expression", ast->token->line, ast->token->col);
+				warn("Unused result of expression", ast->token->line, ast->token->col);
+				ast->data.expr.unusedResult = true;
 			}
 		}
 	}

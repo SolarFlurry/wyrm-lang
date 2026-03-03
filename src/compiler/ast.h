@@ -56,53 +56,56 @@ typedef struct AstNode {
 	NodeType type;
 	Token* token;
 	union {
-		union {
-			struct {
-				LiteralType type;
-			} literal;
-			struct {
-				char* name;
-			} ident;
-			struct {
-				AstNode** stmts;
-				size_t stmtCount;
-				Scope* scope;
-			} block;
-			struct {
-				AstNode** fields;
-				size_t length;
-			} tuple;
-			struct {
-				AstNode* func;
-				AstNode** args;
-				size_t argsCount;
-			} funcCall;
-			struct {
-				Token* builtin;
-				AstNode** args;
-				size_t argsCount;
-			} builtinCall;
-			struct {
-				BinOpCategory category;
-				TokenType op;
-				AstNode* lhs;
-				AstNode* rhs;
-			} binaryOp;
-			struct {
-				char op;
-				AstNode* operand;
-			} unaryOp;
-			struct {
-				Token** paramNames;
-				AstNode** paramTypes;
-				size_t paramCount;
-				AstNode* body;
-			} lambda;
-			struct {
-				AstNode* condition;
-				AstNode* trueBranch;
-				AstNode* falseBranch; // can be null
-			} ifExpr;
+		struct {
+			bool unusedResult;
+			union {
+				struct {
+					LiteralType type;
+				} literal;
+				struct {
+					char* name;
+				} ident;
+				struct {
+					AstNode** stmts;
+					size_t stmtCount;
+					Scope* scope;
+				} block;
+				struct {
+					AstNode** fields;
+					size_t length;
+				} tuple;
+				struct {
+					AstNode* func;
+					AstNode** args;
+					size_t argsCount;
+				} funcCall;
+				struct {
+					Token* builtin;
+					AstNode** args;
+					size_t argsCount;
+				} builtinCall;
+				struct {
+					BinOpCategory category;
+					TokenType op;
+					AstNode* lhs;
+					AstNode* rhs;
+				} binaryOp;
+				struct {
+					char op;
+					AstNode* operand;
+				} unaryOp;
+				struct {
+					Token** paramNames;
+					AstNode** paramTypes;
+					size_t paramCount;
+					AstNode* body;
+				} lambda;
+				struct {
+					AstNode* condition;
+					AstNode* trueBranch;
+					AstNode* falseBranch; // can be null
+				} ifExpr;
+			};
 		} expr;
 		union {
 			struct {
