@@ -64,18 +64,6 @@ static BindingPower postfixBp(TokenType op) {
 	}
 }
 
-static char getOp(TokenType op) {
-	switch (op) {
-		case TOK_PLUS: return '+';
-		case TOK_MINUS: return '-';
-		case TOK_ASTERISK: return '*';
-		case TOK_SLASH: return '/';
-		case TOK_LARROW: return '<';
-		case TOK_RARROW: return '>';
-		default: return /* unreachable */ ' ';
-	}
-}
-
 static BinOpCategory getCategory(TokenType op) {
 	switch (op) {
 		case TOK_DOT:
@@ -161,7 +149,7 @@ static AstNode* parseExprBP(ArenaAllocator* arena, int minBP) {
 
 		AstNode* binOp = makeNode(arena, NODE_EXPR_BINOP);
 		binOp->data.expr.binaryOp.lhs = lhs;
-		binOp->data.expr.binaryOp.op = getOp(lookahead(0)->type);
+		binOp->data.expr.binaryOp.op = lookahead(0)->type;
 		binOp->data.expr.binaryOp.category = getCategory(lookahead(0)->type);
 
 		next();
@@ -188,9 +176,9 @@ void parseExpressionList(ArenaAllocator* arena, GrowableArray* list, TokenType e
 }
 
 AstNode* parseBlock(ArenaAllocator* arena) {
+	AstNode* block = makeNode(arena, NODE_EXPR_BLOCK);
 	consume(TOK_LBRACE, "Expected '{'");
 
-	AstNode* block = makeNode(arena, NODE_EXPR_BLOCK);
 	GrowableArray stmts = growableArrayCreate(arena, sizeof(AstNode*));
 
 	while (lookahead(0)->type != TOK_RBRACE) {
@@ -308,6 +296,12 @@ AstNode* parseAtom(ArenaAllocator* arena) {
 			lambda->data.expr.lambda.body = parseExpression(arena);
 
 			return lambda;
+		}
+		case TOK_KEYWORD_FALSE: case TOK_KEYWORD_TRUE: {
+			AstNode* literal = makeNode(arena, NODE_EXPR_LITERAL);
+			literal->data.expr.literal.type = LIT_BOOL;
+			next();
+			return literal;
 		}
 		default: {
 			const char* base = "Unexpected ";

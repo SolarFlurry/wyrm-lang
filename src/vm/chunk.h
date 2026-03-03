@@ -9,6 +9,7 @@ typedef enum {
 	OP_GET_LOCAL,
 	OP_ADD,
 	OP_SUBTRACT,
+	OP_EQUAL,
 	OP_JUMP,
 	OP_JUMP_IF_ZERO,
 	OP_CALL,

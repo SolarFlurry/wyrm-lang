@@ -84,7 +84,7 @@ typedef struct AstNode {
 			} builtinCall;
 			struct {
 				BinOpCategory category;
-				char op;
+				TokenType op;
 				AstNode* lhs;
 				AstNode* rhs;
 			} binaryOp;

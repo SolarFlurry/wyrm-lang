@@ -25,6 +25,15 @@ static void patchJump(int offset, int with) {
 	ctx.chunk->bytecode[offset + 1] = jump & 0xff;
 }
 
+static void genStmts(int stmtCount, AstNode** stmts, Scope* scope) {
+	for (int i = 0; i < stmtCount; i++) {
+		genStmt(stmts[i], scope);
+	}
+	for (int i = 0; i < scope->symbols.length; i++) {
+		emitByte(OP_POP);
+	}
+}
+
 static void initCodegen(CodegenContext* ctx, ArenaAllocator* arena, Chunk* chunk) {
 	ctx->arena = arena;
 	ctx->chunk = chunk;
@@ -66,12 +75,12 @@ void genStmt(AstNode* stmt, Scope* scope) {
 
 			free(string);
 
-			for (int i = 0; i < stmt->data.stmt.funcDec.stmtCount; i++) {
-				genStmt(stmt->data.stmt.funcDec.stmts[i], stmt->data.stmt.funcDec.scope);
-			}
-			for (int i = 0; i < stmt->data.stmt.funcDec.scope->symbols.length; i++) {
-				emitByte(OP_POP);
-			}
+			genStmts(
+				stmt->data.stmt.funcDec.stmtCount,
+				stmt->data.stmt.funcDec.stmts,
+				stmt->data.stmt.funcDec.scope
+			);
+
 			emitByte(OP_RETURN);
 		} break;
 		case NODE_STMT_VARDEC: {
@@ -106,6 +115,17 @@ void genExpression(AstNode* expr, Scope* scope) {
 					writeChunk(ctx.chunk, OP_CONSTANT);
 					writeChunk(ctx.chunk, constant);
 				} break;
+				case LIT_BOOL: {
+					uint8_t constant = 0;
+					if (expr->token->type == TOK_KEYWORD_TRUE) {
+						constant = addConstant(ctx.chunk, (Value){.as = {.i32 = 1}});
+					} else {
+						constant = addConstant(ctx.chunk, (Value){.as = {.i32 = 1}});
+					}
+
+					writeChunk(ctx.chunk, OP_CONSTANT);
+					writeChunk(ctx.chunk, constant);
+				} break;
 				default: {
 					errorFromCause("this literal type is not supported yet", expr->token);
 					return;
@@ -116,11 +136,14 @@ void genExpression(AstNode* expr, Scope* scope) {
 			genExpression(expr->data.expr.binaryOp.rhs, scope);
 			genExpression(expr->data.expr.binaryOp.lhs, scope);
 			switch (expr->data.expr.binaryOp.op) {
-				case '+': {
+				case TOK_PLUS: {
 					writeChunk(ctx.chunk, OP_ADD);
 				} break;
-				case '-': {
+				case TOK_MINUS: {
 					writeChunk(ctx.chunk, OP_SUBTRACT);
+				} break;
+				case TOK_EQ_EQ: {
+					writeChunk(ctx.chunk, OP_EQUAL);
 				} break;
 				default: {
 					errorFromCause("this operator is not yet supported", expr->token);
@@ -132,8 +155,23 @@ void genExpression(AstNode* expr, Scope* scope) {
 			emitByte(OP_GET_LOCAL);
 			emitByte(symbol->funcIndex);
 		} break;
+		case NODE_EXPR_BLOCK: {
+			genStmts(
+				expr->data.expr.block.stmtCount,
+				expr->data.expr.block.stmts,
+				expr->data.expr.block.scope
+			);
+		} break;
 		case NODE_EXPR_IF: {
-			// uh
+			genExpression(expr->data.expr.ifExpr.condition, scope);
+			int elseJump = emitJump(OP_JUMP_IF_ZERO);
+			genExpression(expr->data.expr.ifExpr.trueBranch, scope);
+			int outJump = emitJump(OP_JUMP);
+			patchJump(elseJump, ctx.chunk->length);
+			if (expr->data.expr.ifExpr.falseBranch != NULL) {
+				genExpression(expr->data.expr.ifExpr.falseBranch, scope);
+			}
+			patchJump(outJump, ctx.chunk->length);
 		} break;
 		default: {
 			errorFromCause("not an expression", expr->token);

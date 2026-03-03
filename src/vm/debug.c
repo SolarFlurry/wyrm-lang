@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 void disassembleChunk(Chunk* chunk, const char* name) {
-	printf("== %s ==\n", name);
+	printf(" == %s ==\n", name);
 
 	for (int offset = 0; offset < chunk->length;) {
 		offset = disassembleInstruction(chunk, offset);
@@ -44,6 +44,8 @@ int disassembleInstruction(Chunk* chunk, int offset) {
 			return simpleInstruction("OP_ADD", offset);
 		case OP_SUBTRACT:
 			return simpleInstruction("OP_SUBTRACT", offset);
+		case OP_EQUAL:
+			return simpleInstruction("OP_EQUAL", offset);
 		case OP_JUMP:
 			return jumpInstruction("OP_JUMP", 1, chunk, offset);
 		case OP_JUMP_IF_ZERO:

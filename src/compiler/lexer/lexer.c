@@ -48,6 +48,7 @@ static TokenType identifierType() {
 			switch (lx.start[1]) {
 				case 'e': return checkKeyword(2, 2, "st", TOK_KEYWORD_TEST);
 				case 'h': return checkKeyword(2, 2, "en", TOK_KEYWORD_THEN);
+				case 'r': return checkKeyword(2, 2, "ue", TOK_KEYWORD_TRUE);
 			}
 		} break;
 		case 'c': if (lx.current - lx.start > 1 && lx.start[1] == 'o') {
@@ -64,6 +65,7 @@ static TokenType identifierType() {
 			switch (lx.start[1]) {
 				case 'u': return checkKeyword(2, 2, "nc", TOK_KEYWORD_FUNC);
 				case 'o': return checkKeyword(2, 1, "r", TOK_KEYWORD_FOR);
+				case 'a': return checkKeyword(2, 3, "lse", TOK_KEYWORD_FALSE);
 			}
 		} break;
 	}

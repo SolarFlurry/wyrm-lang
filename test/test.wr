@@ -1,4 +1,4 @@
 pub func main () {
-	let hello = 1 + 2;
-	hello;
+    let hello = 1 + 2;
+    let some = if hello == 3 then 6 else 7;
 }

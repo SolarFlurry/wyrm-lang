@@ -50,6 +50,9 @@ InterpretResult evaluate(Chunk* chunk) {
 			case OP_SUBTRACT: {
 				push((Value){.as = pop().as.i32 - pop().as.i32});
 			} break;
+			case OP_EQUAL: {
+				push((Value){.as = pop().as.i32 == pop().as.i32});
+			} break;
 			case OP_JUMP: {
 				uint16_t offset = READ_BYTE();
 				vm.ip += offset;
