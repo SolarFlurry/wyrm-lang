@@ -1,4 +1,4 @@
-func hello(a: *mut i32, b: *i32, c: i32[], d: i32[mut], e: i32[*], f: i32[*mut]) {
+func hello(a: *mut i32, b: *i32, c: [i32], d: [mut i32], e: [*]i32, f: [*mut]i32) {
 	// a is mutable
 	// b is immutable
 	// c is immutable
@@ -8,7 +8,7 @@ func hello(a: *mut i32, b: *i32, c: i32[], d: i32[mut], e: i32[*], f: i32[*mut])
 }
 
 pub func main() {
-	let x = 0;
-	let y = [0; 10];
-	hello(&mut x, &x, y[6..], y[mut 6..], &y, &mut y);
+	let mut x = 0;
+	let mut y = [0; 10];
+	hello(mut &x, &x, y[6..], mut y[6..], mut &y, mut &y);
 }

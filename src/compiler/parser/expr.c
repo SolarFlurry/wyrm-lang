@@ -167,8 +167,8 @@ AstNode* parseExpression(ArenaAllocator* arena) {
 
 void parseExpressionList(ArenaAllocator* arena, GrowableArray* list, TokenType endSymbol) {
 	while (lookahead(0)->type != endSymbol) {
-		AstNode* s = growableArrayPush(list);
-		s = parseExpression(arena);
+		AstNode** s = growableArrayPush(list);
+		*s = parseExpression(arena);
 		
 		if (lookahead(0)->type == endSymbol) break;
 		consume(TOK_COMMA, "Expected ','");

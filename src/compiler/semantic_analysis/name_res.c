@@ -1,6 +1,7 @@
 #include "semantic_analysis.h"
 
 #include "../error/error.h"
+#include <stdio.h>
 
 static void resolveNode(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 	switch (ast->type) {
@@ -27,14 +28,14 @@ static void resolveNode(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 		case NODE_STMT_FUNCDEC: {
 			Token* lvalue = ast->data.stmt.funcDec.lvalue;
 			char* s = createOwnedString(arena, lvalue->start, lvalue->length);
-			AstNode* type = arenaAlloc(arena, sizeof(AstNode*));
+			AstNode* type = arenaAlloc(arena, sizeof(AstNode));
 			type->type = NODE_TYPE_FUNCTION;
 			type->data.type.function.paramCount = ast->data.stmt.funcDec.paramCount;
 			type->data.type.function.paramTypes = ast->data.stmt.funcDec.paramTypes;
 			type->data.type.function.returnType = ast->data.stmt.funcDec.returnType;
 
-			bool result = scopeAddSymbol(arena, scope, s, VAR_CONST, type, NULL);
-			if (!result) {
+			Symbol* result = scopeAddSymbol(arena, scope, s, VAR_CONST, type, NULL);
+			if (result == NULL) {
 				errorFromCause("Redefinition of symbol", lvalue);
 				return;
 			}

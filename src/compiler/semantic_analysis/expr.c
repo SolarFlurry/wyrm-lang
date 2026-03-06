@@ -87,6 +87,27 @@ AstNode* typecheckExpr(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 			}
 			return NULL;
 		}
+		case NODE_EXPR_CALL: {
+			AstNode* funcType = typecheckExpr(arena, ast->data.expr.funcCall.func, scope);
+			if (funcType == NULL) return NULL;
+			if (funcType->type != NODE_TYPE_FUNCTION) {
+				errorFromCause("Cannot call on a non-function value", ast->token);
+				return NULL;
+			}
+			if (funcType->data.type.function.paramCount != ast->data.expr.funcCall.argsCount) {
+				errorFromCause("Unexpected number of arguments", ast->token);
+				return NULL;
+			}
+			for (int i = 0; i < ast->data.expr.funcCall.argsCount; i++) {
+				AstNode* arg = ast->data.expr.funcCall.args[i];
+				AstNode* paramType = typecheckExpr(arena, arg, scope);
+				if (!typeEquals(paramType, funcType->data.type.function.paramTypes[i])) {
+					errorFromCause("Type mismatch", arg->token);
+				}
+			}
+
+			return funcType->data.type.function.returnType;
+		}
 		default: errorFromCause("cannot typecheck", ast->token);
 	}
 }

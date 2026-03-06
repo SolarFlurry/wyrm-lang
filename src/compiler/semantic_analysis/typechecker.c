@@ -9,6 +9,8 @@ bool typeEquals(AstNode* type, AstNode* type2) {
 		return true;
 	}
 
+	if (type == NULL || type2 == NULL) return true;
+
 	if (type->type != type2->type) {
 		return false;
 	}
@@ -82,7 +84,9 @@ void typecheckStmt(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 			typecheckFuncDec(arena, ast, scope);
 		} break;
 		case NODE_STMT_BLOCKEXIT: {
-			
+			if (ast->data.stmt.blockExit.exitExpr != NULL) {
+				typecheckExpr(arena, ast->data.stmt.blockExit.exitExpr, scope);
+			}
 		} break;
 		default: {
 			AstNode* type = typecheckExpr(arena, ast, scope);
