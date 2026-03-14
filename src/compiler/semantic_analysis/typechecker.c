@@ -69,6 +69,19 @@ void typecheckFuncDec(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 	Scope* funcScope = arenaAlloc(arena, sizeof(Scope));
 	initScope(arena, funcScope, scope);
 	funcScope->isFuncScope = true;
+
+	for (int i = 0; i < ast->data.stmt.funcDec.paramCount; i++) {
+		Token* name = ast->data.stmt.funcDec.paramNames[i];
+		Symbol* added = scopeAddSymbol(
+			arena,
+			funcScope,
+			createOwnedString(arena, name->start, name->length),
+			VAR_LOCAL,
+			ast->data.stmt.funcDec.paramTypes[i],
+			NULL
+		);
+	}
+
 	ast->data.stmt.funcDec.scope = funcScope;
 	for (int i = 0; i < ast->data.stmt.funcDec.stmtCount; i++) {
 		typecheckStmt(arena, ast->data.stmt.funcDec.stmts[i], funcScope);

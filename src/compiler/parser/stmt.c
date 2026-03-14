@@ -73,8 +73,7 @@ AstNode* parseFuncDecl(ArenaAllocator* arena) {
 	parseParamList(arena, &paramNames, &paramTypes, TOK_RPAREN, false);
 	consume(TOK_RPAREN, "Expected ')'");
 
-	if (lookahead(0)->type == TOK_MINUS_RARROW) {
-		next();
+	if (lookahead(0)->type != TOK_LBRACE) {
 		stmt->data.stmt.funcDec.returnType = parseType(arena);
 	}
 	

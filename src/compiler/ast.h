@@ -136,6 +136,10 @@ typedef struct AstNode {
 			} blockExit;
 		} stmt;
 		union {
+			enum {
+				TYPE_BUILTIN_ERROR,
+				TYPE_BUILTIN_NORETURN,
+			} builtin;
 			struct {
 				char* name;
 			} basic;

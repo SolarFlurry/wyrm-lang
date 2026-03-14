@@ -189,7 +189,7 @@ void genExpression(AstNode* expr, Scope* scope) {
 			patchJump(outJump, ctx.chunk->length);
 		} break;
 		default: {
-			errorFromCause("not an expression", expr->token);
+			errorFromCause("Cannot codegen this construct", expr->token);
 			return;
 		}
 	}

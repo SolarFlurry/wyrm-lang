@@ -86,13 +86,13 @@ int main (int argc, char** argv) {
 		}
 		file.replace_extension(".wr");
 
-		int expected = file.string().find("error") == string::npos ? 0 : 1;
+		bool expectedError = file.string().find("error") != string::npos;
 
-		if (status == expected) {
+		if ((status > 0 && expectedError) || (status == 0 && !expectedError)) {
 			testsPassed += 1;
 		} else {
 			std::cout << "\x1b[31m\uf467 Test Failed:\x1b[0m " << file << std::endl
-				<< "Expected " << (expected ? "no error" : "error") << std::endl;
+				<< "Expected " << (expectedError ? "error" : "no error") << std::endl;
 		}
 	}
 	std::cout << std::endl;
