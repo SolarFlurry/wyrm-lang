@@ -1,4 +1,5 @@
 #include "token.h"
+#include <stdio.h>
 
 const char* describeTokenType(TokenType type) {
 	switch (type) {
@@ -11,5 +12,11 @@ const char* describeTokenType(TokenType type) {
 		case TOK_KEYWORD_FUNC: return "keyword 'func'";
 		case TOK_KEYWORD_STRUCT: return "keyword 'struct'";
 		default: return "token";
+	}
+}
+
+void printTokData(Token* tok) {
+	for (int i = 0; i < tok->length; i++) {
+		putchar(tok->start[i]);
 	}
 }

@@ -17,17 +17,14 @@ int main (int argc, const char** argv) {
 		.setDescription("Wyrm programming language")
 		.setHelpMessage("Use 'wyrm help' for help on the CLI")
 		.addSubcommand(Subcommand("help", "display CLI help", 0))
-		.addSubcommand(Subcommand("build", "compile Wyrm source", 1));
+		.addSubcommand(Subcommand("build", "compile Wyrm source", 1))
+		.addSubcommand(Subcommand("cst", "use experimental CST parser", 1));
 
 	ArgsInfo info = parser.parse();
 
 	if (info.subcommand == "help") {
 		parser.printHelp();
 		exit(0);
-	}
-
-	if (info.subcommand != "build") {
-		exit(1);
 	}
 
 	FILE* fp = fopen(info.args[0], "r");
@@ -43,6 +40,11 @@ int main (int argc, const char** argv) {
 	char* fileContents = (char*)malloc(sizeof(char) * (fileSize + 1));
 	size_t charsRead = fread(fileContents, sizeof(char), fileSize, fp);
 	fileContents[fileSize] = '\0';
+
+	if (info.subcommand == "cst") {
+		compileCst(fileContents, info.args[0]);
+		exit(0);
+	}
 
 	Chunk bytecode = compile(fileContents, info.args[0]);
 

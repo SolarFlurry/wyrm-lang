@@ -75,3 +75,5 @@ typedef struct {
 	uint32_t line;
 	uint32_t col;
 } Token;
+
+void printTokData(Token* tok);

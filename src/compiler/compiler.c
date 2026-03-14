@@ -8,12 +8,26 @@
 #include "ast.h"
 #include "error/error.h"
 #include "utils/memory.h"
+#include "compiler/cst_parser/parser.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
 Compiler compiler;
+
+void compileCst(const char* source, const char* filename) {
+	ArenaAllocator allocator;
+	arenaInit(&allocator, 65536);
+
+	compiler.source = source;
+	compiler.filename = filename;
+	
+	clock_t parseStart = clock();
+	initLexer(&allocator, source);
+	parseCst(&allocator);
+	printEvents();
+}
 
 Chunk compile(const char* source, const char* filename) {
 	ArenaAllocator allocator;

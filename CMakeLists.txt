@@ -28,6 +28,8 @@ add_executable(wyrm
 	src/compiler/semantic_analysis/name_res.c
 	src/compiler/semantic_analysis/typechecker.c
 	src/compiler/semantic_analysis/expr.c
+	src/compiler/cst_parser/parser.c
+	src/compiler/common/cst.c
 )
 target_include_directories(wyrm PUBLIC "${CMAKE_SOURCE_DIR}/src")
 
