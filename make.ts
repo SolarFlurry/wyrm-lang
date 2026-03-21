@@ -2,8 +2,7 @@
 import $ from "jsr:@david/dax@0.44.2";
 
 async function build() {
-	await $`cmake -B build`;
-	await $`cmake --build build`
+	await $`zig build -p . ${Deno.args.slice(1)}`;
 }
 
 if (Deno.args.length == 0) {
@@ -25,6 +24,9 @@ switch (Deno.args[0]) {
 	case "test": {
 		await build();
 		await $`./bin/test ./tests`;
+	} break;
+	case "clear": {
+		await Deno.remove(".zig-cache/", { recursive: true })
 	} break;
 	default:
 		console.log(`Unknown command '${Deno.args[0]}'`);
