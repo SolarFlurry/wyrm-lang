@@ -1,8 +1,8 @@
 #!/usr/bin/env -S deno run --allow-all
 import $ from "jsr:@david/dax@0.44.2";
 
-async function build() {
-	await $`zig build -p . ${Deno.args.slice(1)}`;
+async function build(args: string[]) {
+	await $`zig build -p . ${args}`;
 }
 
 if (Deno.args.length == 0) {
@@ -11,9 +11,9 @@ if (Deno.args.length == 0) {
 }
 
 switch (Deno.args[0]) {
-	case "build": await build(); break;
+	case "build": await build(Deno.args.slice(1)); break;
 	case "run": {
-		await build();
+		await build([]);
 		const result = await $`./bin/wyrm ${Deno.args.slice(1)}`.noThrow();
 		if (result.code === 139) {
 			console.error("\nSegmentation fault \x1b[2;3m(make.ts)\x1b[0m");
@@ -22,7 +22,7 @@ switch (Deno.args[0]) {
 		}
 	} break;
 	case "test": {
-		await build();
+		await build([]);
 		await $`./bin/test ./tests`;
 	} break;
 	case "clear": {

@@ -4,7 +4,7 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const wyrmExe = b.addExecutable(.{
+    const wyrm_exe = b.addExecutable(.{
         .name = "wyrm",
         .root_module = b.createModule(.{
             .target = target,
@@ -12,7 +12,7 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
-    const testExe = b.addExecutable(.{
+    const test_exe = b.addExecutable(.{
         .name = "test",
         .root_module = b.createModule(.{
             .target = target,
@@ -20,13 +20,13 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
-    testExe.addCSourceFile(.{
+    test_exe.addCSourceFile(.{
         .language = .cpp,
         .file = b.path("src/test.cpp"),
         .flags = &.{"-std=c++23"},
     });
 
-    wyrmExe.addCSourceFiles(.{
+    wyrm_exe.addCSourceFiles(.{
         .language = .cpp,
         .files = &.{
             "src/main.cpp",
@@ -35,7 +35,7 @@ pub fn build(b: *std.Build) void {
         .flags = &.{"-std=c++23"},
     });
 
-    wyrmExe.addCSourceFiles(.{
+    wyrm_exe.addCSourceFiles(.{
         .language = .c,
         .files = &.{
             "src/utils/memory.c",
@@ -62,15 +62,15 @@ pub fn build(b: *std.Build) void {
         },
     });
 
-    wyrmExe.addIncludePath(b.path("src/"));
+    wyrm_exe.addIncludePath(b.path("src/"));
 
-    wyrmExe.linkage = .dynamic;
-    wyrmExe.linkLibC();
-    wyrmExe.linkLibCpp();
+    wyrm_exe.linkage = .dynamic;
+    wyrm_exe.linkLibC();
+    wyrm_exe.linkLibCpp();
 
-    testExe.linkage = .dynamic;
-    testExe.linkLibCpp();
+    test_exe.linkage = .dynamic;
+    test_exe.linkLibCpp();
 
-    b.installArtifact(wyrmExe);
-    b.installArtifact(testExe);
+    b.installArtifact(wyrm_exe);
+    b.installArtifact(test_exe);
 }
