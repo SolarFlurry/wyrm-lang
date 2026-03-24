@@ -3,6 +3,7 @@
 #include "compiler/token.h"
 
 #include <stdio.h>
+#include <stdalign.h>
 
 static Token currentToken;
 static GrowableArray events;
@@ -14,7 +15,7 @@ void printEvents() {
         CstEvent event = *(CstEvent*)growableArrayGet(&events, i);
         switch (event.kind) {
             case CST_EVENT_OPEN:
-                for (int j = 0; j < indent; j++) putchar('  ');
+                for (int j = 0; j < indent; j++) printf("  ");
                 printf("Kind %d:\n", event.open.kind);
                 indent++;
                 break;
@@ -22,7 +23,7 @@ void printEvents() {
                 indent--;
                 break;
             case CST_EVENT_ADVANCE:
-                for (int j = 0; j < indent; j++) putchar('  ');
+                for (int j = 0; j < indent; j++) printf("  ");
                 printf("Token '");
                 printTokData(&event.advance.tok);
                 printf("'\n");
@@ -90,7 +91,7 @@ static void advanceWithError(ArenaAllocator* arena) {
 }
 
 void parseCst(ArenaAllocator* arena) {
-    events = growableArrayCreate(arena, sizeof(CstEvent));
+    events = growableArrayCreate(arena, sizeof(CstEvent), alignof(CstEvent));
     currentToken = *nextToken();
     size_t mark = open(arena);
 

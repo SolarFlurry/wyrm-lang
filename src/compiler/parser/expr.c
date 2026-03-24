@@ -3,6 +3,7 @@
 #include "compiler/error/error.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdalign.h>
 
 static BindingPower infixBp(TokenType op) {
 	switch (op) {
@@ -126,7 +127,7 @@ static AstNode* parseExprBP(ArenaAllocator* arena, int minBP) {
 			AstNode* unaryOp = makeNode(arena, NODE_EXPR_UNOP);
 			if (lookahead(0)->type == TOK_LPAREN) {
 				next();
-				GrowableArray exprs = growableArrayCreate(arena, sizeof(AstNode*));
+				GrowableArray exprs = GROWABLE_ARRAY_NEW(AstNode*, arena);
 				parseExpressionList(arena, &exprs, TOK_RPAREN);
 				consume(TOK_RPAREN, "Expected matching ')'");
 				unaryOp->type = NODE_EXPR_CALL;
@@ -179,7 +180,7 @@ AstNode* parseBlock(ArenaAllocator* arena) {
 	AstNode* block = makeNode(arena, NODE_EXPR_BLOCK);
 	consume(TOK_LBRACE, "Expected '{'");
 
-	GrowableArray stmts = growableArrayCreate(arena, sizeof(AstNode*));
+	GrowableArray stmts = GROWABLE_ARRAY_NEW(AstNode*, arena);
 
 	while (lookahead(0)->type != TOK_RBRACE) {
 		AstNode* stmt = parseStatement(arena);
@@ -212,7 +213,7 @@ AstNode* parseAtom(ArenaAllocator* arena) {
 				return expr;
 			}
 
-			GrowableArray tuple = growableArrayCreate(arena, sizeof(AstNode*));
+			GrowableArray tuple = GROWABLE_ARRAY_NEW(AstNode*, arena);
 			AstNode** s = growableArrayPush(&tuple);
 			*s = expr;
 			next();
@@ -230,7 +231,7 @@ AstNode* parseAtom(ArenaAllocator* arena) {
 			expr->data.expr.builtinCall.builtin = lookahead(0);
 			consume(TOK_IDENT, "Expected an identifier");
 			consume(TOK_LPAREN, "Expected '('");
-			GrowableArray args = growableArrayCreate(arena, sizeof(AstNode*));
+			GrowableArray args = GROWABLE_ARRAY_NEW(AstNode*, arena);
 
 			parseExpressionList(arena, &args, TOK_RPAREN);
 			next();
@@ -284,8 +285,8 @@ AstNode* parseAtom(ArenaAllocator* arena) {
 		case TOK_BACKSLASH: {
 			AstNode* lambda = makeNode(arena, NODE_EXPR_LAMBDA);
 			next();
-			GrowableArray paramNames = growableArrayCreate(arena, sizeof(Token*));
-			GrowableArray paramTypes = growableArrayCreate(arena, sizeof(AstNode*));
+			GrowableArray paramNames = GROWABLE_ARRAY_NEW(Token*, arena);
+			GrowableArray paramTypes = GROWABLE_ARRAY_NEW(AstNode*, arena);
 
 			parseParamList(arena, &paramNames, &paramTypes, TOK_MINUS_RARROW, true);
 
@@ -306,7 +307,7 @@ AstNode* parseAtom(ArenaAllocator* arena) {
 		default: {
 			const char* base = "Unexpected ";
 			const char* addition = describeTokenType(lookahead(0)->type);
-			char* fmt = arenaAlloc(arena, strlen(base) + strlen(addition) + 1);
+			char* fmt = arenaAlloc(arena, strlen(base) + strlen(addition) + 1, alignof(char));
 			memcpy(fmt, base, strlen(base));
 			strcat(fmt, addition);
 			errorFromCause(fmt, lookahead(0));

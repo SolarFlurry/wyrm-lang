@@ -3,6 +3,7 @@
 #include "../error/error.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdalign.h>
 
 bool typeEquals(AstNode* type, AstNode* type2) {
 	if (type == type2) {
@@ -66,7 +67,7 @@ void typecheckFuncDec(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 		return;
 	}
 
-	Scope* funcScope = arenaAlloc(arena, sizeof(Scope));
+	Scope* funcScope = arenaAlloc(arena, sizeof(Scope), alignof(Scope));
 	initScope(arena, funcScope, scope);
 	funcScope->isFuncScope = true;
 

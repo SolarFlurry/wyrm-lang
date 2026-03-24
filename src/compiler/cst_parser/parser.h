@@ -11,7 +11,7 @@ typedef struct CstEvent {
     } kind;
     union {
         struct { TreeKind kind; } open;
-        struct { Token tok } advance;
+        struct { Token tok; } advance;
     };
 } CstEvent;
 

@@ -3,13 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdalign.h>
 
 #include "../error/error.h"
 
 Token* parseTok;
 
 AstNode* makeNode(ArenaAllocator* arena, NodeType type) {
-	AstNode* ast = arenaAlloc(arena, sizeof(AstNode));
+	AstNode* ast = arenaAlloc(arena, sizeof(AstNode), alignof(AstNode));
 	ast->type = type;
 	ast->token = parseTok;
 	return ast;
@@ -41,7 +42,7 @@ Token* lookahead(size_t offset) {
 AstNode* parse(ArenaAllocator* arena) {
 	parseTok = nextToken();
 
-	GrowableArray stmts = growableArrayCreate(arena, sizeof(AstNode*));
+	GrowableArray stmts = GROWABLE_ARRAY_NEW(AstNode*, arena);
 
 	while (lookahead(0)->type != TOK_EOF) {
 		AstNode* stmt = parseStatement(arena);
@@ -50,7 +51,7 @@ AstNode* parse(ArenaAllocator* arena) {
 		*slot = stmt;
 	}
 
-	AstNode* program = arenaAlloc(arena, sizeof(AstNode));
+	AstNode* program = arenaAlloc(arena, sizeof(AstNode), alignof(AstNode*));
 
 	program->type = NODE_STMT_PROGRAM;
 	program->data.stmt.program.stmts = stmts.data;

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdalign.h>
 
 void* reallocate(void* ptr, size_t newSize) {
 	if (newSize == 0) {
@@ -35,7 +36,9 @@ void arenaInit(ArenaAllocator* arena, size_t initialSize) {
 	arena->totalAllocated = 0;
 }
 
-void* arenaAlloc(ArenaAllocator* arena, size_t s) {
+void* arenaAlloc(ArenaAllocator* arena, ptrdiff_t s, ptrdiff_t align) {
+	ptrdiff_t padding = -(uintptr_t)(arena->offset + arena->buffer->ptr) & (align - 1);
+	arena->offset += padding;
 	if (s > arena->buffer->capacity - arena->offset) {
 		Buffer* buffer = bufferCreate(arena->buffer->capacity);
 		arena->buffer->next = buffer;
@@ -49,7 +52,7 @@ void* arenaAlloc(ArenaAllocator* arena, size_t s) {
 }
 
 char* createOwnedString(ArenaAllocator* arena, const char* str, size_t length) {
-	char* c = arenaAlloc(arena, sizeof(char) * (length + 1));
+	char* c = arenaAlloc(arena, sizeof(char) * (length + 1), alignof(char));
 	strncpy(c, str, length);
 	c[length] = '\0';
 	return c;
@@ -64,15 +67,15 @@ void arenaDestroy(ArenaAllocator* arena) {
 	}
 }
 
-GrowableArray growableArrayCreate(ArenaAllocator* arena, size_t itemSize) {
-	GrowableArray growableArray = {0};
-	growableArray.arena = arena;
-	growableArray.capacity = 0;
-	growableArray.length = 0;
-	growableArray.itemSize = itemSize;
-	growableArray.data = NULL;
-
-	return growableArray;
+GrowableArray growableArrayCreate(ArenaAllocator* arena, size_t itemSize, size_t alignment) {
+	return (GrowableArray){
+		.arena = arena,
+		.capacity = 0,
+		.length = 0,
+		.itemSize = itemSize,
+		.data = NULL,
+		.alignment = alignment,
+	};
 }
 
 void* growableArrayGet(GrowableArray* growableArray, size_t index) {
@@ -85,7 +88,7 @@ void* growableArrayGet(GrowableArray* growableArray, size_t index) {
 void* growableArrayPush(GrowableArray* growableArray) {
 	if (growableArray->length >= growableArray->capacity) {
 		growableArray->capacity = GROW_CAPACITY(growableArray->capacity);
-		void* ptr = arenaAlloc(growableArray->arena, growableArray->capacity * growableArray->itemSize);
+		void* ptr = arenaAlloc(growableArray->arena, growableArray->capacity * growableArray->itemSize, growableArray->alignment);
 		memcpy(ptr, growableArray->data, growableArray->length * growableArray->itemSize);
 		growableArray->data = ptr;
 	}

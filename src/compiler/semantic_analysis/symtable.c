@@ -2,6 +2,7 @@
 
 #include "../error/error.h"
 #include <string.h>
+#include <stdalign.h>
 
 void initScope(ArenaAllocator* arena, Scope* scope, Scope* parent) {
 	scope->parent = parent;
@@ -15,8 +16,8 @@ void initScope(ArenaAllocator* arena, Scope* scope, Scope* parent) {
 
 	scope->isFuncScope = false;
 
-	scope->children = growableArrayCreate(arena, sizeof(Scope*));
-	scope->symbols = growableArrayCreate(arena, sizeof(Symbol));
+	scope->children = growableArrayCreate(arena, sizeof(Scope*), alignof(Scope*));
+	scope->symbols = growableArrayCreate(arena, sizeof(Symbol), alignof(Symbol));
 }
 
 Symbol* scopeLookup(Scope* scope, const char* name) {

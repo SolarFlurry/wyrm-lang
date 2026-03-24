@@ -2,6 +2,7 @@
 
 #include <ctype.h>
 #include <string.h>
+#include <stdalign.h>
 #include "../error/error.h"
 
 Lexer lx;
@@ -15,7 +16,7 @@ void initLexer(ArenaAllocator* arena, const char* program) {
 }
 
 static Token* makeToken(TokenType type) {
-	Token* token = (Token*)arenaAlloc(lx.arena, sizeof(Token));
+	Token* token = (Token*)arenaAlloc(lx.arena, sizeof(Token), alignof(Token));
 	token->type = type;
 	token->start = lx.start;
 	token->length = lx.current - lx.start;

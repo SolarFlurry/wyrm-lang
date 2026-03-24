@@ -2,6 +2,7 @@
 
 #include "../error/error.h"
 #include <stdio.h>
+#include <stdalign.h>
 
 static void resolveNode(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 	switch (ast->type) {
@@ -28,7 +29,7 @@ static void resolveNode(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 		case NODE_STMT_FUNCDEC: {
 			Token* lvalue = ast->data.stmt.funcDec.lvalue;
 			char* s = createOwnedString(arena, lvalue->start, lvalue->length);
-			AstNode* type = arenaAlloc(arena, sizeof(AstNode));
+			AstNode* type = arenaAlloc(arena, sizeof(AstNode), alignof(AstNode));
 			type->type = NODE_TYPE_FUNCTION;
 			type->data.type.function.paramCount = ast->data.stmt.funcDec.paramCount;
 			type->data.type.function.paramTypes = ast->data.stmt.funcDec.paramTypes;

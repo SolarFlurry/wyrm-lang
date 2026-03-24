@@ -2,6 +2,7 @@
 
 #include "../error/error.h"
 #include <stdio.h>
+#include <stdalign.h>
 
 AstNode* parseVarDecl(ArenaAllocator* arena) {
 	AstNode* stmt = makeNode(arena, NODE_STMT_VARDEC);
@@ -67,8 +68,8 @@ AstNode* parseFuncDecl(ArenaAllocator* arena) {
 	stmt->data.stmt.funcDec.lvalue = lookahead(0);
 	consume(TOK_IDENT, "Expected an identifier");
 	consume(TOK_LPAREN, "Expected '('");
-	GrowableArray paramNames = growableArrayCreate(arena, sizeof(Token*));
-	GrowableArray paramTypes = growableArrayCreate(arena, sizeof(AstNode*));
+	GrowableArray paramNames = GROWABLE_ARRAY_NEW(Token*, arena);
+	GrowableArray paramTypes = GROWABLE_ARRAY_NEW(AstNode*, arena);
 
 	parseParamList(arena, &paramNames, &paramTypes, TOK_RPAREN, false);
 	consume(TOK_RPAREN, "Expected ')'");
@@ -83,7 +84,7 @@ AstNode* parseFuncDecl(ArenaAllocator* arena) {
 
 	consume(TOK_LBRACE, "Expected '{'");
 
-	GrowableArray stmts = growableArrayCreate(arena, sizeof(AstNode*));
+	GrowableArray stmts = GROWABLE_ARRAY_NEW(AstNode*, arena);
 
 	while (lookahead(0)->type != TOK_RBRACE) {
 		AstNode* stmt = parseStatement(arena);
