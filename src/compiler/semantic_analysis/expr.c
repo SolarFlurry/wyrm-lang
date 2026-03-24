@@ -8,7 +8,7 @@
 AstNode* typecheckExpr(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 	switch (ast->type) {
 		case NODE_EXPR_LITERAL: {
-			AstNode* node = arenaAlloc(arena, sizeof(AstNode), alignof(AstNode));
+			AstNode* node = ARENA_ALLOC(arena, AstNode, 1);
 			node->type = NODE_TYPE_BASIC;
 			switch (ast->data.expr.literal.type) {
 				case LIT_INT: node->data.type.basic.name = "i32"; break;
@@ -80,7 +80,7 @@ AstNode* typecheckExpr(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 			return trueType;
 		}
 		case NODE_EXPR_BLOCK: {
-			Scope* blockScope = (Scope*)arenaAlloc(arena, sizeof(Scope), alignof(Scope));
+			Scope* blockScope = ARENA_ALLOC(arena, Scope, 1);
 			initScope(arena, blockScope, scope);
 			ast->data.expr.block.scope = blockScope;
 			for (int i = 0; i < ast->data.expr.block.stmtCount; i++) {

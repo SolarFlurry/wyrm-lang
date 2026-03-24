@@ -7,15 +7,7 @@ typedef struct {
 	const char* filename;
 } Compiler;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 void compileCst(const char* source, const char* filename);
-Chunk compile(const char* source, const char* filename);
+uint8_t compile(const char* source, const char* filename, Chunk* result);
 const char* getSource();
 const char* getFilename();
-
-#ifdef __cplusplus
-}
-#endif

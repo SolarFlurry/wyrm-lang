@@ -307,7 +307,7 @@ AstNode* parseAtom(ArenaAllocator* arena) {
 		default: {
 			const char* base = "Unexpected ";
 			const char* addition = describeTokenType(lookahead(0)->type);
-			char* fmt = arenaAlloc(arena, strlen(base) + strlen(addition) + 1, alignof(char));
+			char* fmt = ARENA_ALLOC(arena, char, strlen(base) + strlen(addition) + 1);
 			memcpy(fmt, base, strlen(base));
 			strcat(fmt, addition);
 			errorFromCause(fmt, lookahead(0));

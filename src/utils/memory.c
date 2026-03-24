@@ -13,7 +13,6 @@ void* reallocate(void* ptr, size_t newSize) {
 	void* result = realloc(ptr, newSize);
 	if (result == NULL) {
 		printf("reallocation failed, requested %zu bytes\n", newSize);
-		exit(1);
 	}
 	return result;
 }
@@ -52,7 +51,7 @@ void* arenaAlloc(ArenaAllocator* arena, ptrdiff_t s, ptrdiff_t align) {
 }
 
 char* createOwnedString(ArenaAllocator* arena, const char* str, size_t length) {
-	char* c = arenaAlloc(arena, sizeof(char) * (length + 1), alignof(char));
+	char* c = ARENA_ALLOC(arena, char, length + 1);
 	strncpy(c, str, length);
 	c[length] = '\0';
 	return c;

@@ -16,6 +16,9 @@
 #define GROWABLE_ARRAY_NEW(type, arena) \
 	growableArrayCreate(arena, sizeof(type), alignof(type))
 
+#define ARENA_ALLOC(arena, type, count) \
+	(type*)arenaAlloc(arena, sizeof(type) * (count), alignof(type))
+
 typedef struct Buffer {
 	void* ptr;
 	size_t capacity;

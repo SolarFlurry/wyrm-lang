@@ -16,7 +16,7 @@ void initLexer(ArenaAllocator* arena, const char* program) {
 }
 
 static Token* makeToken(TokenType type) {
-	Token* token = (Token*)arenaAlloc(lx.arena, sizeof(Token), alignof(Token));
+	Token* token = ARENA_ALLOC(lx.arena, Token, 1);
 	token->type = type;
 	token->start = lx.start;
 	token->length = lx.current - lx.start;

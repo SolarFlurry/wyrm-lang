@@ -29,7 +29,7 @@ void compileCst(const char* source, const char* filename) {
 	printEvents();
 }
 
-Chunk compile(const char* source, const char* filename) {
+uint8_t compile(const char* source, const char* filename, Chunk* result) {
 	ArenaAllocator allocator;
 	arenaInit(&allocator, 65536);
 
@@ -44,7 +44,7 @@ Chunk compile(const char* source, const char* filename) {
 		printf("Arena allocated %lu bytes\n", allocator.totalAllocated);
 		printErrors();
 		arenaDestroy(&allocator);
-		exit(1);
+		return 1;
 	}
 	printf("Parsing finished in %f seconds\n", (double)(clock() - parseStart)/CLOCKS_PER_SEC);
 
@@ -64,21 +64,21 @@ Chunk compile(const char* source, const char* filename) {
 		printf("Arena allocated %lu bytes\n", allocator.totalAllocated);
 		printErrors();
 		arenaDestroy(&allocator);
-		exit(1);
+		return 1;
 	}
 	
-	Chunk bytecode = generateBytecode(ast, &topScope, &allocator);
+	*result = generateBytecode(ast, &topScope, &allocator);
 	printf("Arena allocated %lu bytes\n", allocator.totalAllocated);
 	arenaDestroy(&allocator);
 
 	if (errorsCount() > 0) {
 		printErrors();
-		exit(1);
+		return 1;
 	}
 
 	printErrors();
 
-	return bytecode;
+	return 0;
 }
 
 const char* getSource() {

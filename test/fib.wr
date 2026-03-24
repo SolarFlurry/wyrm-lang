@@ -8,6 +8,6 @@ func fib(depth: i32) i32 {
 	return fib(depth-1) + fib(depth-2);
 }
 
-pub func main () {
+pub func main() {
 	assert(fib(20) == 6765);
 }

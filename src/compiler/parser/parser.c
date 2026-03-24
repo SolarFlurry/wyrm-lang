@@ -10,7 +10,7 @@
 Token* parseTok;
 
 AstNode* makeNode(ArenaAllocator* arena, NodeType type) {
-	AstNode* ast = arenaAlloc(arena, sizeof(AstNode), alignof(AstNode));
+	AstNode* ast = ARENA_ALLOC(arena, AstNode, 1);
 	ast->type = type;
 	ast->token = parseTok;
 	return ast;
@@ -18,10 +18,6 @@ AstNode* makeNode(ArenaAllocator* arena, NodeType type) {
 
 void consume(TokenType type, const char* message) {
 	if (parseTok->type != type) {
-		if (parseTok->type == TOK_EOF) {
-			printErrors();
-			exit(1);
-		}
 		if (parseTok->type == TOK_UNKNOWN) return;
 		errorFromCause(message, parseTok);
 	} else next();
@@ -51,7 +47,7 @@ AstNode* parse(ArenaAllocator* arena) {
 		*slot = stmt;
 	}
 
-	AstNode* program = arenaAlloc(arena, sizeof(AstNode), alignof(AstNode*));
+	AstNode* program = ARENA_ALLOC(arena, AstNode, 1);
 
 	program->type = NODE_STMT_PROGRAM;
 	program->data.stmt.program.stmts = stmts.data;

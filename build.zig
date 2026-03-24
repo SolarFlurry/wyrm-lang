@@ -7,6 +7,7 @@ pub fn build(b: *std.Build) void {
     const wyrm_exe = b.addExecutable(.{
         .name = "wyrm",
         .root_module = b.createModule(.{
+            .root_source_file = b.path("src/main.zig"),
             .target = target,
             .optimize = optimize,
         }),
@@ -26,14 +27,14 @@ pub fn build(b: *std.Build) void {
         .flags = &.{"-std=c++23"},
     });
 
-    wyrm_exe.addCSourceFiles(.{
-        .language = .cpp,
-        .files = &.{
-            "src/main.cpp",
-            "src/cli/cli_parser.cpp",
-        },
-        .flags = &.{"-std=c++23"},
-    });
+    // wyrm_exe.addCSourceFiles(.{
+    //     .language = .cpp,
+    //     .files = &.{
+    //         "src/main.cpp",
+    //         "src/cli/cli_parser.cpp",
+    //     },
+    //     .flags = &.{"-std=c++23"},
+    // });
 
     wyrm_exe.addCSourceFiles(.{
         .language = .c,

@@ -67,7 +67,7 @@ void typecheckFuncDec(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 		return;
 	}
 
-	Scope* funcScope = arenaAlloc(arena, sizeof(Scope), alignof(Scope));
+	Scope* funcScope = ARENA_ALLOC(arena, Scope, 1);
 	initScope(arena, funcScope, scope);
 	funcScope->isFuncScope = true;
 
