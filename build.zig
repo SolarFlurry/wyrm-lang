@@ -13,6 +13,9 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
+    const clap = b.dependency("clap", .{});
+    wyrm_exe.root_module.addImport("clap", clap.module("clap"));
+
     const test_exe = b.addExecutable(.{
         .name = "test",
         .root_module = b.createModule(.{
