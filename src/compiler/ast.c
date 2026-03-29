@@ -2,6 +2,19 @@
 
 #include <stdio.h>
 
+AstNode* exprToAst(ArenaAllocator* arena, ExprNode* expr) {
+
+}
+AstNode* declToAst(ArenaAllocator* arena, DeclNode* decl) {
+    AstNode* ast = ARENA_ALLOC(arena, AstNode, 1);
+    *ast = (AstNode){
+        .data.decl = decl->data,
+        .kind = decl->kind,
+        .token = decl->token,
+    };
+    return ast;
+}
+
 static void printIndent(uint32_t indent, uint64_t has_lines, int indent_type) {
     for (int i = 0; i < indent; i++) {
         if ((1 << (indent - i) & has_lines) > 0) {
@@ -26,40 +39,40 @@ void printAST(AstNode* ast, uint32_t indent, int indent_type, uint64_t has_lines
         return;
     }
 
-    switch (ast->type) {
-        case NODE_STMT_PROGRAM: {
+    switch (ast->kind) {
+        case NODE_PROGRAM: {
             printf("Program\x1b[0m:\n");
-            for (int i = 0; i < ast->data.stmt.program.stmtCount; i++) {
-                if (i == ast->data.stmt.program.stmtCount - 1) {
-                    printAST(ast->data.stmt.program.stmts[i], indent + 1, 2, has_lines << 1);
+            for (int i = 0; i < ast->data.program.declCount; i++) {
+                if (i == ast->data.program.declCount - 1) {
+                    printAST(ast->data.program.decls[i], indent + 1, 2, has_lines << 1);
                     continue;
                 }
-                printAST(ast->data.stmt.program.stmts[i], indent + 1, 1, has_lines << 1 | 1);
+                printAST(ast->data.program.decls[i], indent + 1, 1, has_lines << 1 | 1);
             }
         } break;
-        case NODE_STMT_VARDEC: {
+        case NODE_DECL_VAR: {
             printf("VarDecl\x1b[0m => \x1b[35m'");
-            for (int i = 0; i < ast->data.stmt.varDec.lvalue->length; i++) {
-                putchar(ast->data.stmt.varDec.lvalue->start[i]);
+            for (int i = 0; i < ast->data.decl.lvalue->length; i++) {
+                putchar(ast->data.decl.lvalue->start[i]);
             }
             puts("'\x1b[0m");
-            if (ast->data.stmt.varDec.type != NULL) {
-                printAST(ast->data.stmt.varDec.type, indent + 1, 1, has_lines << 1);
+            if (ast->data.decl.var.type != NULL) {
+                printAST(ast->data.decl.var.type, indent + 1, 1, has_lines << 1);
             }
-            printAST(ast->data.stmt.varDec.initial, indent + 1, 2, has_lines << 1);
+            printAST(ast->data.decl.var.initial, indent + 1, 2, has_lines << 1);
         } break;
-        case NODE_STMT_FUNCDEC: {
+        case NODE_DECL_FUNC: {
             printf("FuncDecl\x1b[0m => \x1b[35m'");
-            for (int i = 0; i < ast->data.stmt.funcDec.lvalue->length; i++) {
-                putchar(ast->data.stmt.funcDec.lvalue->start[i]);
+            for (int i = 0; i < ast->data.decl.lvalue->length; i++) {
+                putchar(ast->data.decl.lvalue->start[i]);
             }
             puts("'\x1b[0m");
-            for (int i = 0; i < ast->data.stmt.funcDec.stmtCount; i++) {
-                if (i == ast->data.stmt.funcDec.stmtCount - 1) {
-                    printAST(ast->data.stmt.funcDec.stmts[i], indent + 1, 2, has_lines << 1);
+            for (int i = 0; i < ast->data.decl.func.stmtCount; i++) {
+                if (i == ast->data.decl.func.stmtCount - 1) {
+                    printAST(ast->data.decl.func.stmts[i], indent + 1, 2, has_lines << 1);
                     continue;
                 }
-                printAST(ast->data.stmt.funcDec.stmts[i], indent + 1, 1, has_lines << 1 | 1);
+                printAST(ast->data.decl.func.stmts[i], indent + 1, 1, has_lines << 1 | 1);
             }
         } break;
         case NODE_EXPR_IDENT: {
@@ -129,24 +142,28 @@ void printAST(AstNode* ast, uint32_t indent, int indent_type, uint64_t has_lines
                 printAST(ast->data.expr.ifExpr.trueBranch, indent + 1, 2, has_lines << 1);
             }
         } break;
-        case NODE_TYPE_BASIC: {
-            printf("BasicType\x1b[0m => '%s'\n", ast->data.type.basic.name);
+        case NODE_EXPR_TYPE_NAMED: {
+            printf("BasicType\x1b[0m => '%s'\n", ast->data.expr.type.named.name);
         } break;
-        case NODE_TYPE_FUNCTION: {
-            printf("FuncType\x1b[0m (%lu args):\n", ast->data.type.function.paramCount);
+        case NODE_EXPR_TYPE_FUNC: {
+            printf("FuncType\x1b[0m (%lu args):\n", ast->data.expr.type.func.paramCount);
 
-            if (ast->data.type.function.paramCount == 0)
-                printAST(ast->data.type.function.returnType, indent + 1, 2, has_lines << 1);
+            if (ast->data.expr.type.func.paramCount == 0)
+                printAST(ast->data.expr.type.func.returnType, indent + 1, 2, has_lines << 1);
             else
-                printAST(ast->data.type.function.returnType, indent + 1, 1, has_lines << 1 | 1);
+                printAST(ast->data.expr.type.func.returnType, indent + 1, 1, has_lines << 1 | 1);
 
-            for (int i = 0; i < ast->data.type.function.paramCount; i++) {
-                if (i == ast->data.type.function.paramCount - 1) {
-                    printAST(ast->data.type.function.paramTypes[i], indent + 1, 2, has_lines << 1);
+            for (int i = 0; i < ast->data.expr.type.func.paramCount; i++) {
+                if (i == ast->data.expr.type.func.paramCount - 1) {
+                    printAST(ast->data.expr.type.func.paramTypes[i], indent + 1, 2, has_lines << 1);
                     continue;
                 }
-                printAST(ast->data.type.function.paramTypes[i], indent + 1, 1, has_lines << 1 | 1);
+                printAST(ast->data.expr.type.func.paramTypes[i], indent + 1, 1, has_lines << 1 | 1);
             }
+        } break;
+        case NODE_EXPR_EXIT: {
+            printf("ExitExpr\x1b[0m '%s'\n", ast->data.expr.exit.isReturn ? "return" : "break");
+            printAST(ast->data.expr.exit.exitExpr, indent + 1, 2, has_lines << 1);
         } break;
         default: {
             printf("Unknown ASTNode type...\x1b[0m\n");

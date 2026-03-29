@@ -41,7 +41,7 @@ static void initCodegen(CodegenContext* ctx, ArenaAllocator* arena, Chunk* chunk
 }
 
 Chunk generateBytecode(AstNode* ast, Scope* scope, ArenaAllocator* arena) {
-	if (ast->type != NODE_STMT_PROGRAM) {
+	if (ast->kind != NODE_PROGRAM) {
 		error("Argument to bytecode not a program", 0, 0);
 	}
 
@@ -52,8 +52,8 @@ Chunk generateBytecode(AstNode* ast, Scope* scope, ArenaAllocator* arena) {
 
 	int jump = emitJump(OP_CALL);
 
-		for (int i = 0; i < ast->data.stmt.program.stmtCount; i++) {
-		genStmt(ast->data.stmt.program.stmts[i], scope);
+		for (int i = 0; i < ast->data.program.declCount; i++) {
+		genStmt(ast->data.program.decls[i], scope);
 	}
 	
 	patchJump(jump, ctx.mainLocation);
@@ -62,9 +62,9 @@ Chunk generateBytecode(AstNode* ast, Scope* scope, ArenaAllocator* arena) {
 }
 
 void genStmt(AstNode* stmt, Scope* scope) {
-	switch (stmt->type) {
-		case NODE_STMT_FUNCDEC: {
-			Token* lvalue = stmt->data.stmt.funcDec.lvalue;
+	switch (stmt->kind) {
+		case NODE_DECL_FUNC: {
+			Token* lvalue = stmt->data.decl.lvalue;
 			char* string = (char*)malloc(lvalue->length + 1);
 			memcpy(string, lvalue->start, lvalue->length);
 			string[lvalue->length] = '\0';
@@ -76,20 +76,15 @@ void genStmt(AstNode* stmt, Scope* scope) {
 			free(string);
 
 			genStmts(
-				stmt->data.stmt.funcDec.stmtCount,
-				stmt->data.stmt.funcDec.stmts,
-				stmt->data.stmt.funcDec.scope
+				stmt->data.decl.func.stmtCount,
+				stmt->data.decl.func.stmts,
+				stmt->data.decl.func.scope
 			);
 			
 			emitByte(OP_RETURN);
 		} break;
-		case NODE_STMT_VARDEC: {
-			genExpression(stmt->data.stmt.varDec.initial, scope);
-		} break;
-		case NODE_STMT_BLOCKEXIT: {
-			if (stmt->data.stmt.blockExit.isReturn) {
-				emitByte(OP_RETURN);
-			}
+		case NODE_DECL_VAR: {
+			genExpression(stmt->data.decl.var.initial, scope);
 		} break;
 		default: {
 			genExpression(stmt, scope);
@@ -101,7 +96,7 @@ void genStmt(AstNode* stmt, Scope* scope) {
 }
 
 void genExpression(AstNode* expr, Scope* scope) {
-	switch (expr->type) {
+	switch (expr->kind) {
 		case NODE_EXPR_LITERAL: {
 			switch (expr->data.expr.literal.type) {
 				case LIT_INT: {
@@ -187,6 +182,11 @@ void genExpression(AstNode* expr, Scope* scope) {
 				genExpression(expr->data.expr.ifExpr.falseBranch, scope);
 			}
 			patchJump(outJump, ctx.chunk->length);
+		} break;
+		case NODE_EXPR_EXIT: {
+			if (expr->data.expr.exit.isReturn) {
+				emitByte(OP_RETURN);
+			}
 		} break;
 		default: {
 			errorFromCause("Cannot codegen this construct", expr->token);

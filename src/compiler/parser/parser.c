@@ -9,13 +9,6 @@
 
 Token* parseTok;
 
-AstNode* makeNode(ArenaAllocator* arena, NodeType type) {
-	AstNode* ast = ARENA_ALLOC(arena, AstNode, 1);
-	ast->type = type;
-	ast->token = parseTok;
-	return ast;
-}
-
 void consume(TokenType type, const char* message) {
 	if (parseTok->type != type) {
 		if (parseTok->type == TOK_UNKNOWN) return;
@@ -38,20 +31,20 @@ Token* lookahead(size_t offset) {
 AstNode* parse(ArenaAllocator* arena) {
 	parseTok = nextToken();
 
-	GrowableArray stmts = GROWABLE_ARRAY_NEW(AstNode*, arena);
+	GrowableArray decls = GROWABLE_ARRAY_NEW(DeclNode*, arena);
 
 	while (lookahead(0)->type != TOK_EOF) {
-		AstNode* stmt = parseStatement(arena);
+		DeclNode* decl = parseDecl(arena);
 		
-		AstNode** slot = (AstNode**)growableArrayPush(&stmts);
-		*slot = stmt;
+		DeclNode** slot = (DeclNode**)growableArrayPush(&decls);
+		*slot = decl;
 	}
 
 	AstNode* program = ARENA_ALLOC(arena, AstNode, 1);
 
-	program->type = NODE_STMT_PROGRAM;
-	program->data.stmt.program.stmts = stmts.data;
-	program->data.stmt.program.stmtCount = stmts.length;
+	program->kind = NODE_PROGRAM;
+	program->data.program.decls = decls.data;
+	program->data.program.declCount = decls.length;
 
 	return program;
 }

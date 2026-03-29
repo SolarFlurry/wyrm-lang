@@ -50,7 +50,7 @@ pub fn build(b: *std.Build) void {
             "src/compiler/lexer/lexer.c",
             "src/compiler/parser/parser.c",
             "src/compiler/parser/expr.c",
-            "src/compiler/parser/stmt.c",
+            "src/compiler/parser/decl.c",
             "src/compiler/parser/type.c",
             "src/compiler/error/error.c",
             "src/compiler/ast.c",

@@ -2,11 +2,16 @@
 
 #include "utils/common.h"
 #include "token.h"
+#include "utils/memory.h"
 
+typedef struct ExprNode ExprNode;
+typedef struct DeclNode DeclNode;
 typedef struct AstNode AstNode;
 typedef struct Scope Scope;
 
 typedef enum {
+	NODE_PROGRAM,
+
 	NODE_EXPR_LITERAL,
 	NODE_EXPR_IDENT,
 	NODE_EXPR_BLOCK,
@@ -17,18 +22,17 @@ typedef enum {
 	NODE_EXPR_UNOP,
 	NODE_EXPR_LAMBDA,
 	NODE_EXPR_IF,
+	NODE_EXPR_EXIT,
 
-	NODE_STMT_PROGRAM,
-	NODE_STMT_VARDEC,
-	NODE_STMT_FUNCDEC,
-	NODE_STMT_BLOCKEXIT,
+	NODE_EXPR_TYPE_NAMED,
+	NODE_EXPR_TYPE_PTR,
+	NODE_EXPR_TYPE_ARRAY,
+	NODE_EXPR_TYPE_TUPLE,
+	NODE_EXPR_TYPE_FUNC,
 
-	NODE_TYPE_BASIC,
-	NODE_TYPE_POINTER,
-	NODE_TYPE_ARRAY,
-	NODE_TYPE_TUPLE,
-	NODE_TYPE_FUNCTION,
-} NodeType;
+	NODE_DECL_VAR,
+	NODE_DECL_FUNC,
+} NodeKind;
 
 typedef enum {
 	VAR_CONST,
@@ -52,89 +56,59 @@ typedef enum {
 	BINOP_ASSIGNMENT,
 } BinOpCategory;
 
-typedef struct AstNode {
-	NodeType type;
-	Token* token;
+typedef struct Expr {
+	bool unusedResult;
 	union {
 		struct {
-			bool unusedResult;
-			union {
-				struct {
-					LiteralType type;
-				} literal;
-				struct {
-					char* name;
-				} ident;
-				struct {
-					AstNode** stmts;
-					size_t stmtCount;
-					Scope* scope;
-				} block;
-				struct {
-					AstNode** fields;
-					size_t length;
-				} tuple;
-				struct {
-					AstNode* func;
-					AstNode** args;
-					size_t argsCount;
-				} funcCall;
-				struct {
-					Token* builtin;
-					AstNode** args;
-					size_t argsCount;
-				} builtinCall;
-				struct {
-					BinOpCategory category;
-					TokenType op;
-					AstNode* lhs;
-					AstNode* rhs;
-				} binaryOp;
-				struct {
-					char op;
-					AstNode* operand;
-				} unaryOp;
-				struct {
-					Token** paramNames;
-					AstNode** paramTypes;
-					size_t paramCount;
-					AstNode* body;
-				} lambda;
-				struct {
-					AstNode* condition;
-					AstNode* trueBranch;
-					AstNode* falseBranch; // can be null
-				} ifExpr;
-			};
-		} expr;
-		union {
-			struct {
-				AstNode** stmts;
-				size_t stmtCount;
-			} program;
-			struct {
-				VarDeclType varType;
-				Token* lvalue;
-				AstNode* type; // can be null
-				AstNode* initial;
-				bool isPublic;
-			} varDec;
-			struct {
-				Token* lvalue;
-				AstNode** paramTypes;
-				size_t paramCount;
-				Token** paramNames;
-				AstNode* returnType;
-				AstNode** stmts;
-				size_t stmtCount;
-				Scope* scope;
-				bool isPublic;
-			} funcDec;
-			struct {
-				bool isReturn;
-				AstNode* exitExpr; // can be null;
-			} blockExit;
-		} stmt;
+			LiteralType type;
+		} literal;
+		struct {
+			char* name;
+		} ident;
+		struct {
+			AstNode** stmts;
+			size_t stmtCount;
+			Scope* scope;
+		} block;
+		struct {
+			AstNode** fields;
+			size_t length;
+		} tuple;
+		struct {
+			AstNode* func;
+			AstNode** args;
+			size_t argsCount;
+		} funcCall;
+		struct {
+			Token* builtin;
+			AstNode** args;
+			size_t argsCount;
+		} builtinCall;
+		struct {
+			BinOpCategory category;
+			TokenType op;
+			ExprNode* lhs;
+			ExprNode* rhs;
+		} binaryOp;
+		struct {
+			char op;
+			AstNode* operand;
+		} unaryOp;
+		struct {
+			Token** paramNames;
+			AstNode** paramTypes;
+			size_t paramCount;
+			AstNode* body;
+		} lambda;
+		struct {
+			ExprNode* condition;
+			ExprNode* trueBranch;
+			ExprNode* falseBranch; // can be null
+		} ifExpr;
+		struct {
+			bool isReturn;
+			ExprNode* exitExpr;
+		} exit;
 		union {
 			enum {
 				TYPE_BUILTIN_ERROR,
@@ -142,25 +116,74 @@ typedef struct AstNode {
 			} builtin;
 			struct {
 				char* name;
-			} basic;
+			} named;
 			struct {
-				AstNode* pointee;
+				bool isMut;
+				bool isSlice;
+				ExprNode* operand;
 			} pointer;
 			struct {
-				AstNode* type;
-				AstNode* size;
+				ExprNode* type;
+				size_t len;
 			} array;
 			struct {
-				AstNode** fieldTypes;
+				ExprNode** fieldTypes;
 				size_t fieldCount;
 			} tuple;
 			struct {
-				AstNode** paramTypes;
+				ExprNode** paramTypes;
 				size_t paramCount;
-				AstNode* returnType;
-			} function;
+				ExprNode* returnType;
+			} func;
 		} type;
+	};
+} Expr;
+
+typedef struct Decl {
+	Token* lvalue;
+	bool isPublic;
+	struct {
+		VarDeclType varType;
+		AstNode* type; // can be null
+		AstNode* initial;
+	} var;
+	struct {
+		ExprNode** paramTypes;
+		size_t paramCount;
+		Token** paramNames;
+		AstNode* returnType;
+		AstNode** stmts;
+		size_t stmtCount;
+		Scope* scope;
+	} func;
+} Decl;
+
+typedef struct ExprNode {
+	NodeKind kind;
+	Token* token;
+	Expr data;
+} ExprNode;
+
+typedef struct DeclNode {
+	NodeKind kind;
+	Token* token;
+	Decl data;
+} DeclNode;
+
+typedef struct AstNode {
+	NodeKind kind;
+	Token* token;
+	union {
+		struct {
+			DeclNode** decls;
+			size_t declCount;
+		} program;
+
+		Expr expr;
+		Decl decl;
 	} data;
 } AstNode;
 
 void printAST(AstNode* ast, uint32_t indent, int indent_type, uint64_t has_lines);
+AstNode* exprToAst(ArenaAllocator* arena, ExprNode* expr);
+AstNode* declToAst(ArenaAllocator* arena, DeclNode* expr);

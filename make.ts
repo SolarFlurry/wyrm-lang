@@ -2,7 +2,7 @@
 import $ from "jsr:@david/dax@0.44.2";
 
 async function build(args: string[]) {
-	await $`zig build -p . ${args}`;
+	await $`zig build -p . ${args}`.noThrow();
 }
 
 if (Deno.args.length == 0) {

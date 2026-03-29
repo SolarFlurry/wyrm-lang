@@ -88,7 +88,9 @@ static BinOpCategory getCategory(TokenType op) {
 			return BINOP_COMPARISON;
 		case TOK_EQ:
 			return BINOP_ASSIGNMENT;
-		default: {} // do nothing
+		default: {
+			return BINOP_ACCESS; // placeholder
+		} // do nothing
 	}
 }
 
@@ -105,15 +107,15 @@ static inline bool isPostfixOp(TokenType type) {
 	return bp.left != 0;
 }
 
-static AstNode* parseExprBP(ArenaAllocator* arena, int minBP) {
-	AstNode* lhs;
+static ExprNode* parseExprBP(ArenaAllocator* arena, int minBP) {
+	ExprNode* lhs;
 	if (isPrefixOp(lookahead(0)->type)) {
-		lhs = makeNode(arena, NODE_EXPR_UNOP);
+		lhs = MAKE_NODE(arena, ExprNode, NODE_EXPR_UNOP);
 		BindingPower bp = prefixBp(lookahead(0)->type);
 		next();
-		lhs->data.expr.unaryOp.operand = parseExprBP(arena, bp.right);
+		lhs->data.unaryOp.operand = parseExprBP(arena, bp.right);
 	} else {
-		lhs = parseAtom(arena);
+		lhs = parsePrimary(arena);
 	}
 
 	while(true) {
@@ -124,20 +126,20 @@ static AstNode* parseExprBP(ArenaAllocator* arena, int minBP) {
 			if (bp.left < minBP) {
 				break;
 			}
-			AstNode* unaryOp = makeNode(arena, NODE_EXPR_UNOP);
+			ExprNode* unaryOp = MAKE_NODE(arena, ExprNode, NODE_EXPR_UNOP);
 			if (lookahead(0)->type == TOK_LPAREN) {
 				next();
 				GrowableArray exprs = GROWABLE_ARRAY_NEW(AstNode*, arena);
 				parseExpressionList(arena, &exprs, TOK_RPAREN);
 				consume(TOK_RPAREN, "Expected matching ')'");
-				unaryOp->type = NODE_EXPR_CALL;
-				unaryOp->data.expr.funcCall.func = lhs;
-				unaryOp->data.expr.funcCall.args = (AstNode**)exprs.data;
-				unaryOp->data.expr.funcCall.argsCount = exprs.length;
+				unaryOp->kind = NODE_EXPR_CALL;
+				unaryOp->data.funcCall.func = lhs;
+				unaryOp->data.funcCall.args = (AstNode**)exprs.data;
+				unaryOp->data.funcCall.argsCount = exprs.length;
 				lhs = unaryOp;
 			} else {
 				next();
-				unaryOp->data.expr.unaryOp.operand = lhs;
+				unaryOp->data.unaryOp.operand = lhs;
 				lhs = unaryOp;
 			}
 			continue;
@@ -148,21 +150,21 @@ static AstNode* parseExprBP(ArenaAllocator* arena, int minBP) {
 
 		if (bp.left < minBP) break;
 
-		AstNode* binOp = makeNode(arena, NODE_EXPR_BINOP);
-		binOp->data.expr.binaryOp.lhs = lhs;
-		binOp->data.expr.binaryOp.op = lookahead(0)->type;
-		binOp->data.expr.binaryOp.category = getCategory(lookahead(0)->type);
+		ExprNode* binOp = MAKE_NODE(arena, ExprNode, NODE_EXPR_BINOP);
+		binOp->data.binaryOp.lhs = lhs;
+		binOp->data.binaryOp.op = lookahead(0)->type;
+		binOp->data.binaryOp.category = getCategory(lookahead(0)->type);
 
 		next();
 
-		AstNode* rhs = parseExprBP(arena, bp.right);
-		binOp->data.expr.binaryOp.rhs = rhs;
+		ExprNode* rhs = parseExprBP(arena, bp.right);
+		binOp->data.binaryOp.rhs = rhs;
 		lhs = binOp;
 	}
 	return lhs;
 }
 
-AstNode* parseExpression(ArenaAllocator* arena) {
+ExprNode* parseExpression(ArenaAllocator* arena) {
 	return parseExprBP(arena, 0);
 }
 
@@ -176,8 +178,8 @@ void parseExpressionList(ArenaAllocator* arena, GrowableArray* list, TokenType e
 	}
 }
 
-AstNode* parseBlock(ArenaAllocator* arena) {
-	AstNode* block = makeNode(arena, NODE_EXPR_BLOCK);
+ExprNode* parseBlock(ArenaAllocator* arena) {
+	ExprNode* block = MAKE_NODE(arena, ExprNode, NODE_EXPR_BLOCK);
 	consume(TOK_LBRACE, "Expected '{'");
 
 	GrowableArray stmts = GROWABLE_ARRAY_NEW(AstNode*, arena);
@@ -188,21 +190,21 @@ AstNode* parseBlock(ArenaAllocator* arena) {
 		*slot = stmt;
 	}
 	next();
-	block->data.expr.block.stmts = (AstNode**)stmts.data;
-	block->data.expr.block.stmtCount = stmts.length;
+	block->data.block.stmts = (AstNode**)stmts.data;
+	block->data.block.stmtCount = stmts.length;
 
 	return block;
 }
 
-AstNode* parseAtom(ArenaAllocator* arena) {
+ExprNode* parsePrimary(ArenaAllocator* arena) {
 	switch (lookahead(0)->type) {
 		case TOK_LPAREN: {
 			next();
 
 			if (lookahead(0)->type == TOK_RPAREN) {
-				AstNode* unit = makeNode(arena, NODE_EXPR_TUPLE);
-				unit->data.expr.tuple.fields = NULL;
-				unit->data.expr.tuple.length = 0;
+				ExprNode* unit = MAKE_NODE(arena,ExprNode, NODE_EXPR_TUPLE);
+				unit->data.tuple.fields = NULL;
+				unit->data.tuple.length = 0;
 				return unit;
 			}
 
@@ -221,22 +223,22 @@ AstNode* parseAtom(ArenaAllocator* arena) {
 			parseExpressionList(arena, &tuple, TOK_RPAREN);
 			next();
 
-			expr = makeNode(arena, NODE_EXPR_TUPLE);
+			expr = MAKE_NODE(arena, ExprNode, NODE_EXPR_TUPLE);
 			expr->data.expr.tuple.fields = (AstNode**)tuple.data;
 			expr->data.expr.tuple.length = tuple.length;
 		}
 		case TOK_AT: {
-			AstNode* expr = makeNode(arena, NODE_EXPR_BUILTIN);
+			ExprNode* expr = MAKE_NODE(arena, ExprNode, NODE_EXPR_BUILTIN);
 			next();
-			expr->data.expr.builtinCall.builtin = lookahead(0);
+			expr->data.builtinCall.builtin = lookahead(0);
 			consume(TOK_IDENT, "Expected an identifier");
 			consume(TOK_LPAREN, "Expected '('");
 			GrowableArray args = GROWABLE_ARRAY_NEW(AstNode*, arena);
 
 			parseExpressionList(arena, &args, TOK_RPAREN);
 			next();
-			expr->data.expr.builtinCall.args = (AstNode**)args.data;
-			expr->data.expr.builtinCall.argsCount = args.length;
+			expr->data.builtinCall.args = (AstNode**)args.data;
+			expr->data.builtinCall.argsCount = args.length;
 
 			return expr;
 		}
@@ -244,65 +246,81 @@ AstNode* parseAtom(ArenaAllocator* arena) {
 			return parseBlock(arena);
 		}
 		case TOK_IDENT: {
-			AstNode* identifier = makeNode(arena, NODE_EXPR_IDENT);
-			identifier->data.expr.ident.name = createOwnedString(arena, lookahead(0)->start, lookahead(0)->length);
+			ExprNode* identifier = MAKE_NODE(arena, ExprNode, NODE_EXPR_IDENT);
+			identifier->data.ident.name = createOwnedString(arena, lookahead(0)->start, lookahead(0)->length);
 			next();
 			return identifier;
 		}
 		case TOK_INT: {
-			AstNode* literal = makeNode(arena, NODE_EXPR_LITERAL);
-			literal->data.expr.literal.type = LIT_INT;
+			ExprNode* literal = MAKE_NODE(arena, ExprNode, NODE_EXPR_LITERAL);
+			literal->data.literal.type = LIT_INT;
 			next();
 			return literal;
 		}
 		case TOK_STRING: {
-			AstNode* literal = makeNode(arena, NODE_EXPR_LITERAL);
-			literal->data.expr.literal.type = LIT_STRING;
+			ExprNode* literal = MAKE_NODE(arena, ExprNode, NODE_EXPR_LITERAL);
+			literal->data.literal.type = LIT_STRING;
 			next();
 			return literal;
 		}
 		case TOK_KEYWORD_IF: {
-			AstNode* ifExpr = makeNode(arena, NODE_EXPR_IF);
+			ExprNode* ifExpr = MAKE_NODE(arena, ExprNode, NODE_EXPR_IF);
 			next();
-			ifExpr->data.expr.ifExpr.condition = parseExpression(arena);
+			ifExpr->data.ifExpr.condition = parseExpression(arena);
 			if (lookahead(0)->type == TOK_KEYWORD_THEN) {
 				Token* thenToken = lookahead(0);
 				next();
 				if (lookahead(0)->type == TOK_LBRACE) {
 					warnFromCause("Remove the 'then'", thenToken);
 				}
-				ifExpr->data.expr.ifExpr.trueBranch = parseExpression(arena);
+				ifExpr->data.ifExpr.trueBranch = parseExpression(arena);
 			} else {
-				ifExpr->data.expr.ifExpr.trueBranch = parseBlock(arena);
+				ifExpr->data.ifExpr.trueBranch = parseBlock(arena);
 			}
 			if (lookahead(0)->type != TOK_KEYWORD_ELSE) {
 				return ifExpr;
 			}
 			next();
-			ifExpr->data.expr.ifExpr.falseBranch = parseExpression(arena);
+			ifExpr->data.ifExpr.falseBranch = parseExpression(arena);
 			return ifExpr;
 		}
-		case TOK_BACKSLASH: {
-			AstNode* lambda = makeNode(arena, NODE_EXPR_LAMBDA);
-			next();
+		case TOK_PIPE: case TOK_PIPE_PIPE: {
+			ExprNode* lambda = MAKE_NODE(arena, ExprNode, NODE_EXPR_LAMBDA);
+
 			GrowableArray paramNames = GROWABLE_ARRAY_NEW(Token*, arena);
-			GrowableArray paramTypes = GROWABLE_ARRAY_NEW(AstNode*, arena);
+			GrowableArray paramTypes = GROWABLE_ARRAY_NEW(ExprNode*, arena);
 
-			parseParamList(arena, &paramNames, &paramTypes, TOK_MINUS_RARROW, true);
+			if (lookahead(0)->type == TOK_PIPE) {
+				next();
+				parseParamList(arena, &paramNames, &paramTypes, TOK_PIPE, true);
+			}
+			next();
 
-			lambda->data.expr.lambda.paramNames = (Token**)paramNames.data;
-			lambda->data.expr.lambda.paramTypes = (AstNode**)paramTypes.data;
-			lambda->data.expr.lambda.paramCount = paramNames.length;
+			if (lookahead(0)->type != TOK_MINUS_RARROW) {
+				parseType(arena); // ignore result for now
+			}
 
-			lambda->data.expr.lambda.body = parseExpression(arena);
+
+			lambda->data.lambda.paramNames = (Token**)paramNames.data;
+			lambda->data.lambda.paramTypes = (ExprNode**)paramTypes.data;
+			lambda->data.lambda.paramCount = paramNames.length;
+
+			lambda->data.lambda.body = parseExpression(arena);
 
 			return lambda;
 		}
 		case TOK_KEYWORD_FALSE: case TOK_KEYWORD_TRUE: {
-			AstNode* literal = makeNode(arena, NODE_EXPR_LITERAL);
-			literal->data.expr.literal.type = LIT_BOOL;
+			ExprNode* literal = MAKE_NODE(arena, ExprNode, NODE_EXPR_LITERAL);
+			literal->data.literal.type = LIT_BOOL;
 			next();
 			return literal;
+		}
+		case TOK_KEYWORD_RETURN: case TOK_KEYWORD_BREAK: {
+			ExprNode* exit = MAKE_NODE(arena, ExprNode, NODE_EXPR_EXIT);
+			exit->data.exit.isReturn = lookahead(0)->type == TOK_KEYWORD_RETURN;
+			next();
+			exit->data.exit.exitExpr = parseExpression(arena);
+			return exit;
 		}
 		default: {
 			const char* base = "Unexpected ";
@@ -315,4 +333,8 @@ AstNode* parseAtom(ArenaAllocator* arena) {
 			// not sure what this should return
 		}
 	}
+}
+
+AstNode* parseTypeExpr(ArenaAllocator* arena) {
+
 }

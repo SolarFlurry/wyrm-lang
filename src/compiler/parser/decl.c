@@ -4,36 +4,36 @@
 #include <stdio.h>
 #include <stdalign.h>
 
-AstNode* parseVarDecl(ArenaAllocator* arena) {
-	AstNode* stmt = makeNode(arena, NODE_STMT_VARDEC);
-	stmt->data.stmt.varDec.isPublic = false;
+DeclNode* parseVarDecl(ArenaAllocator* arena) {
+	DeclNode* decl = MAKE_NODE(arena, DeclNode, NODE_DECL_VAR);
+	decl->data.isPublic = false;
 
 	if (lookahead(0)->type == TOK_KEYWORD_CONST) {
-		stmt->data.stmt.varDec.varType = VAR_CONST;
+		decl->data.var.varType = VAR_CONST;
 		next();
 	} else {
 		next();
 		if (lookahead(0)->type == TOK_KEYWORD_MUT) {
-			stmt->data.stmt.varDec.varType = VAR_LOCAL_MUT;
+			decl->data.var.varType = VAR_LOCAL_MUT;
 			next();
 		} else {
-			stmt->data.stmt.varDec.varType = VAR_LOCAL;
+			decl->data.var.varType = VAR_LOCAL;
 		}
 	}
-	stmt->data.stmt.varDec.lvalue = lookahead(0);
+	decl->data.lvalue = lookahead(0);
 
 	consume(TOK_IDENT, "Expected an identifier");
 
 	if (lookahead(0)->type == TOK_COLON) {
 		next();
-		stmt->data.stmt.varDec.type = parseType(arena);
+		decl->data.var.type = parseType(arena);
 	} else {
-		stmt->data.stmt.varDec.type = NULL;
+		decl->data.var.type = NULL;
 	}
 
 	consume(TOK_EQ, "Expected '='");
-	stmt->data.stmt.varDec.initial = parseExpression(arena);
-	return stmt;
+	decl->data.var.initial = parseExpression(arena);
+	return decl;
 }
 
 void parseParamList(
@@ -60,12 +60,12 @@ void parseParamList(
 	}
 }
 
-AstNode* parseFuncDecl(ArenaAllocator* arena) {
-	AstNode* stmt = makeNode(arena, NODE_STMT_FUNCDEC);
-	stmt->data.stmt.funcDec.isPublic = false;
+DeclNode* parseFuncDecl(ArenaAllocator* arena) {
+	DeclNode* decl = MAKE_NODE(arena, DeclNode, NODE_DECL_FUNC);
+	decl->data.isPublic = false;
 	next();
 
-	stmt->data.stmt.funcDec.lvalue = lookahead(0);
+	decl->data.lvalue = lookahead(0);
 	consume(TOK_IDENT, "Expected an identifier");
 	consume(TOK_LPAREN, "Expected '('");
 	GrowableArray paramNames = GROWABLE_ARRAY_NEW(Token*, arena);
@@ -75,12 +75,12 @@ AstNode* parseFuncDecl(ArenaAllocator* arena) {
 	consume(TOK_RPAREN, "Expected ')'");
 
 	if (lookahead(0)->type != TOK_LBRACE) {
-		stmt->data.stmt.funcDec.returnType = parseType(arena);
+		decl->data.func.returnType = parseType(arena);
 	}
 	
-	stmt->data.stmt.funcDec.paramNames = (Token**)paramNames.data;
-	stmt->data.stmt.funcDec.paramTypes = (AstNode**)paramTypes.data;
-	stmt->data.stmt.funcDec.paramCount = paramNames.length;
+	decl->data.func.paramNames = (Token**)paramNames.data;
+	decl->data.func.paramTypes = (AstNode**)paramTypes.data;
+	decl->data.func.paramCount = paramNames.length;
 
 	consume(TOK_LBRACE, "Expected '{'");
 
@@ -92,44 +92,46 @@ AstNode* parseFuncDecl(ArenaAllocator* arena) {
 		*slot = stmt;
 	}
 	next();
-	stmt->data.stmt.funcDec.stmts = (AstNode**)stmts.data;
-	stmt->data.stmt.funcDec.stmtCount = stmts.length;
+	decl->data.func.stmts = (AstNode**)stmts.data;
+	decl->data.func.stmtCount = stmts.length;
 
-	return stmt;
+	return decl;
+}
+
+DeclNode* parseDecl(ArenaAllocator* arena) {
+	switch (lookahead(0)->type) {
+		case TOK_KEYWORD_LET: case TOK_KEYWORD_CONST: {
+			DeclNode* decl = parseVarDecl(arena);
+			consume(TOK_SEMICOLON, "Expected ';'");
+			return decl;
+		}
+		case TOK_KEYWORD_FUNC: {
+			DeclNode* decl = parseFuncDecl(arena);
+			return decl;
+		}
+		case TOK_KEYWORD_PUB: {
+			next();
+			if (lookahead(0)->type == TOK_KEYWORD_FUNC) {
+				DeclNode* decl = parseFuncDecl(arena);
+				decl->data.isPublic = true;
+				return decl;
+			}
+			if (lookahead(0)->type == TOK_KEYWORD_CONST) {
+				DeclNode* decl = parseVarDecl(arena);
+				decl->data.isPublic = true;
+				return decl;
+			}
+			errorFromCause("Expected a declaration", lookahead(0));
+			next();
+		}
+		default: return NULL; // placeholder
+	}
 }
 
 AstNode* parseStatement(ArenaAllocator* arena) {
 	switch (lookahead(0)->type) {
 		case TOK_KEYWORD_LET: case TOK_KEYWORD_CONST: {
-			AstNode* stmt = parseVarDecl(arena);
-			consume(TOK_SEMICOLON, "Expected ';'");
-			return stmt;
-		}
-		case TOK_KEYWORD_PUB: {
-			next();
-			if (lookahead(0)->type == TOK_KEYWORD_FUNC) {
-				AstNode* stmt = parseFuncDecl(arena);
-				stmt->data.stmt.funcDec.isPublic = true;
-				return stmt;
-			}
-			if (lookahead(0)->type == TOK_KEYWORD_CONST) {
-				AstNode* stmt = parseVarDecl(arena);
-				stmt->data.stmt.varDec.isPublic = true;
-				return stmt;
-			}
-			errorFromCause("Expected a declaration", lookahead(0));
-			next();
-		}
-		case TOK_KEYWORD_FUNC: {
-			return parseFuncDecl(arena);
-		}
-		case TOK_KEYWORD_BREAK: case TOK_KEYWORD_RETURN: {
-			AstNode* stmt = makeNode(arena, NODE_STMT_BLOCKEXIT);
-			stmt->data.stmt.blockExit.isReturn = lookahead(0)->type == TOK_KEYWORD_RETURN;
-			next();
-			stmt->data.stmt.blockExit.exitExpr = parseExpression(arena);
-			consume(TOK_SEMICOLON, "Expected ';'");
-			return stmt;
+			return declToAst(arena, parseDecl(arena));
 		}
 		default: {
 			AstNode* stmt = parseExpression(arena);

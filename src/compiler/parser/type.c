@@ -3,19 +3,19 @@
 #include <string.h>
 #include "../error/error.h"
 
-AstNode* parseType(ArenaAllocator* arena) {
+ExprNode* parseType(ArenaAllocator* arena) {
 	switch (lookahead(0)->type) {
 		case TOK_IDENT: {
 			char* name = createOwnedString(arena, lookahead(0)->start, lookahead(0)->length);
 			next();
-			AstNode* ast = makeNode(arena, NODE_TYPE_BASIC);
-			ast->data.type.basic.name = name;
+			ExprNode* ast = MAKE_NODE(arena, ExprNode, NODE_EXPR_TYPE_NAMED);
+			ast->data.type.named.name = name;
 			return ast;
 		} break;
 		case TOK_ASTERISK: {
-			AstNode* ast = makeNode(arena, NODE_TYPE_POINTER);
+			ExprNode* ast = MAKE_NODE(arena, ExprNode, NODE_EXPR_TYPE_PTR);
 			next();
-			ast->data.type.pointer.pointee = parseType(arena);
+			ast->data.type.pointer.operand = parseType(arena);
 			return ast;
 		} break;
 		default: {

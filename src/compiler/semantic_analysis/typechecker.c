@@ -5,23 +5,23 @@
 #include <stdio.h>
 #include <stdalign.h>
 
-bool typeEquals(AstNode* type, AstNode* type2) {
+bool typeEquals(ExprNode* type, ExprNode* type2) {
 	if (type == type2) {
 		return true;
 	}
 
 	if (type == NULL || type2 == NULL) return true;
 
-	if (type->type != type2->type) {
+	if (type->kind != type2->kind) {
 		return false;
 	}
 
-	switch (type->type) {
-		case NODE_TYPE_BASIC: {
-			return strcmp(type->data.type.basic.name, type2->data.type.basic.name) == 0;
+	switch (type->kind) {
+		case NODE_EXPR_TYPE_NAMED: {
+			return strcmp(type->data.type.named.name, type2->data.type.named.name) == 0;
 		}
-		case NODE_TYPE_POINTER: {
-			return typeEquals(type->data.type.pointer.pointee, type2->data.type.pointer.pointee);
+		case NODE_EXPR_TYPE_PTR: {
+			return typeEquals(type->data.type.pointer.operand, type2->data.type.pointer.operand);
 		}
 		default: {
 			// unreachable (assuming always pass in a valid type)
@@ -31,15 +31,15 @@ bool typeEquals(AstNode* type, AstNode* type2) {
 	return false;
 }
 
-void typecheckVarDec(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
-	switch (ast->data.stmt.varDec.varType) {
+void typecheckVarDec(ArenaAllocator* arena, DeclNode* decl, Scope* scope) {
+	switch (decl->data.var.varType) {
 		case VAR_LOCAL: case VAR_LOCAL_MUT: {
-			Token* lvalue = ast->data.stmt.varDec.lvalue;
+			Token* lvalue = decl->data.lvalue;
 
 			char* name = createOwnedString(arena, lvalue->start, lvalue->length);
 
-			AstNode* initialType = typecheckExpr(arena, ast->data.stmt.varDec.initial, scope);
-			if (ast->data.stmt.varDec.type != NULL && !typeEquals(ast->data.stmt.varDec.type, initialType)) {
+			AstNode* initialType = typecheckExpr(arena, decl->data.var.initial, scope);
+			if (decl->data.var.type != NULL && !typeEquals(decl->data.var.type, initialType)) {
 				errorFromCause("Specified type does not match type of initial", lvalue);
 			}
 
@@ -55,15 +55,15 @@ void typecheckVarDec(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 		} break;
 		case VAR_CONST: {
 			if (scope->isFuncScope) {
-				errorFromCause("Cannot have a const binding in a function body", ast->token);
+				errorFromCause("Cannot have a const binding in a function body", decl->token);
 			}
 		} break;
 	}
 }
 
-void typecheckFuncDec(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
+void typecheckFuncDec(ArenaAllocator* arena, DeclNode* decl, Scope* scope) {
 	if (scope->isFuncScope) {
-		errorFromCause("Cannot have a func declaration in a function body", ast->token);
+		errorFromCause("Cannot have a func declaration in a function body", decl->token);
 		return;
 	}
 
@@ -71,39 +71,34 @@ void typecheckFuncDec(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 	initScope(arena, funcScope, scope);
 	funcScope->isFuncScope = true;
 
-	for (int i = 0; i < ast->data.stmt.funcDec.paramCount; i++) {
-		Token* name = ast->data.stmt.funcDec.paramNames[i];
+	for (int i = 0; i < decl->data.func.paramCount; i++) {
+		Token* name = decl->data.func.paramNames[i];
 		Symbol* added = scopeAddSymbol(
 			arena,
 			funcScope,
 			createOwnedString(arena, name->start, name->length),
 			VAR_LOCAL,
-			ast->data.stmt.funcDec.paramTypes[i],
+			decl->data.func.paramTypes[i],
 			NULL
 		);
 	}
 
-	ast->data.stmt.funcDec.scope = funcScope;
-	for (int i = 0; i < ast->data.stmt.funcDec.stmtCount; i++) {
-		typecheckStmt(arena, ast->data.stmt.funcDec.stmts[i], funcScope);
+	decl->data.func.scope = funcScope;
+	for (int i = 0; i < decl->data.func.stmtCount; i++) {
+		typecheckStmt(arena, decl->data.func.stmts[i], funcScope);
 	}
 }
 
 void typecheckStmt(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
-	switch (ast->type) {
-		case NODE_STMT_VARDEC: {
+	switch (ast->kind) {
+		case NODE_DECL_VAR: {
 			typecheckVarDec(arena, ast, scope);
 		} break;
-		case NODE_STMT_FUNCDEC: {
+		case NODE_DECL_FUNC: {
 			typecheckFuncDec(arena, ast, scope);
 		} break;
-		case NODE_STMT_BLOCKEXIT: {
-			if (ast->data.stmt.blockExit.exitExpr != NULL) {
-				typecheckExpr(arena, ast->data.stmt.blockExit.exitExpr, scope);
-			}
-		} break;
 		default: {
-			AstNode* type = typecheckExpr(arena, ast, scope);
+			ExprNode* type = typecheckExpr(arena, ast, scope);
 			ast->data.expr.unusedResult = false;
 			if (type != NULL) {
 				warn("Unused result of expression", ast->token->line, ast->token->col);
@@ -114,11 +109,11 @@ void typecheckStmt(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 }
 
 void typeCheck(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
-	if (ast->type != NODE_STMT_PROGRAM) {
+	if (ast->kind != NODE_PROGRAM) {
 		error("Type Checker: Expected a program node", 0, 0);
 		return;
 	}
-	for (int i = 0; i < ast->data.stmt.program.stmtCount; i++) {
-		typecheckStmt(arena, ast->data.stmt.program.stmts[i], scope);
+	for (int i = 0; i < ast->data.program.declCount; i++) {
+		typecheckStmt(arena, ast->data.program.decls[i], scope);
 	}
 }

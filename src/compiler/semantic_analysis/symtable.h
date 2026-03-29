@@ -8,8 +8,8 @@ typedef struct AstNode AstNode;
 
 typedef struct {
 	const char* name;
-	AstNode* type;
-	AstNode* constValue;
+	ExprNode* type;
+	ExprNode* constValue;
 	VarDeclType varType;
 	int funcIndex;
 } Symbol;
@@ -26,4 +26,4 @@ typedef struct Scope {
 void initScope(ArenaAllocator* arena, Scope* scope, Scope* parent);
 Symbol* scopeLookup(Scope* scope, const char* name);
 Symbol* scopeLookupCurrent(Scope* scope, const char* name);
-Symbol* scopeAddSymbol(ArenaAllocator* arena, Scope* scope, const char* name, VarDeclType varType, AstNode* type, AstNode* constValue);
+Symbol* scopeAddSymbol(ArenaAllocator* arena, Scope* scope, const char* name, VarDeclType varType, ExprNode* type, ExprNode* constValue);

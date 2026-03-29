@@ -47,8 +47,8 @@ Symbol* scopeAddSymbol(
 	Scope* scope,
 	const char* name,
 	VarDeclType varType,
-	AstNode* type,
-	AstNode* constValue
+	ExprNode* type,
+	ExprNode* constValue
 ) {
 	Symbol* existing = scopeLookupCurrent(scope, name);
 	if (existing != NULL) {

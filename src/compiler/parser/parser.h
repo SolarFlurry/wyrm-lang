@@ -1,16 +1,19 @@
 #pragma once
 
+#include <string.h>
+
 #include "utils/common.h"
 #include "../token.h"
 #include "../ast.h"
 #include "../lexer/lexer.h"
 
+#define MAKE_NODE(arena, type, nodeKind) \
+	(type*)memcpy(ARENA_ALLOC(arena, type, 1), &(type){.kind = nodeKind, .token = lookahead(0)}, sizeof(type))
+
 typedef struct {
 	int left;
 	int right;
 } BindingPower;
-
-AstNode* makeNode(ArenaAllocator* arena, NodeType type);
 
 void consume(TokenType type, const char* message);
 void next();
@@ -18,9 +21,10 @@ Token* lookahead(size_t offset);
 
 AstNode* parse(ArenaAllocator* arena);
 
+DeclNode* parseDecl(ArenaAllocator* arena);
 AstNode* parseStatement(ArenaAllocator* arena);
-AstNode* parseVarDecl(ArenaAllocator* arena);
-AstNode* parseFuncDecl(ArenaAllocator* arena);
+DeclNode* parseVarDecl(ArenaAllocator* arena);
+DeclNode* parseFuncDecl(ArenaAllocator* arena);
 void parseParamList(
 	ArenaAllocator* arena,
 	GrowableArray* names,
@@ -29,13 +33,13 @@ void parseParamList(
 	bool canBeAuto
 );
 
-AstNode* parseType(ArenaAllocator* arena);
+ExprNode* parseType(ArenaAllocator* arena);
 
 void parseExpressionList(
 	ArenaAllocator* arena,
 	GrowableArray* list,
 	TokenType endSymbol
 );
-AstNode* parseExpression(ArenaAllocator* arena);
-AstNode* parseBlock(ArenaAllocator* arena);
-AstNode* parseAtom(ArenaAllocator* arena);
+ExprNode* parseExpression(ArenaAllocator* arena);
+ExprNode* parseBlock(ArenaAllocator* arena);
+ExprNode* parsePrimary(ArenaAllocator* arena);
