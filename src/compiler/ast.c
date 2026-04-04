@@ -108,6 +108,9 @@ void printAST(AstNode* ast, uint32_t indent, int indent_type, uint64_t has_lines
             printAST(ast->data.expr.binaryOp.lhs, indent + 1, 1, has_lines << 1 | 1);
             printAST(ast->data.expr.binaryOp.rhs, indent + 1, 2, has_lines << 1);
         } break;
+        case NODE_EXPR_UNOP: {
+            printf("UnaryOp\x1b[0m '%c'\n", ast->data.expr.unaryOp.op);
+        } break;
         case NODE_EXPR_CALL: {
             printf("FuncCall\x1b[0m (%zu args):\n", ast->data.expr.funcCall.argsCount);
             if (ast->data.expr.funcCall.argsCount == 0)

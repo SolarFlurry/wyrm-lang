@@ -13,6 +13,7 @@ if (Deno.args.length == 0) {
 switch (Deno.args[0]) {
 	case "build": await build(Deno.args.slice(1)); break;
 	case "run": {
+		await build([]);
 		const result = await $`./bin/wyrm ${Deno.args.slice(1)}`.noThrow();
 		if (result.code === 139) {
 			console.error("\nSegmentation fault \x1b[2;3m(make.ts)\x1b[0m");

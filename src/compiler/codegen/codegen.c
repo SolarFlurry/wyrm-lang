@@ -185,6 +185,7 @@ void genExpression(AstNode* expr, Scope* scope) {
 		} break;
 		case NODE_EXPR_EXIT: {
 			if (expr->data.expr.exit.isReturn) {
+				genExpression(expr->data.expr.exit.exitExpr, scope);
 				emitByte(OP_RETURN);
 			}
 		} break;

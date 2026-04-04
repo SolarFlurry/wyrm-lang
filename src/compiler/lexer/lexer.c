@@ -189,6 +189,7 @@ Token* nextToken() {
 		case '{': return makeToken(TOK_LBRACE);
 		case '}': return makeToken(TOK_RBRACE);
 		case '=': return makeToken(match('=') ? TOK_EQ_EQ : match('>') ? TOK_EQ_RARROW : TOK_EQ);
+		case '!': return makeToken(match('=') ? TOK_BANG_EQ : TOK_BANG);
 		case '@': return makeToken(TOK_AT);
 		default: break;
 	}

@@ -59,6 +59,45 @@ ExprNode* typecheckExpr(ArenaAllocator* arena, ExprNode* expr, Scope* scope) {
 				}
 			}
 		}
+		case NODE_EXPR_UNOP: {
+			ExprNode* operandType = typecheckExpr(arena, expr->data.unaryOp.operand, scope);
+
+			ExprNode* type = ARENA_ALLOC(arena, ExprNode, 1);
+
+			switch (expr->data.unaryOp.op) {
+				case '+': case '-': {
+					type->kind = NODE_EXPR_TYPE_NAMED;
+					type->data.type.named.name = "i32";
+					if (!typeEquals(operandType, type)) {
+						errorFromCause("Expected an integer", expr->token);
+						return NULL;
+					}
+					return operandType;
+				}
+				case '!': {
+					type->kind = NODE_EXPR_TYPE_NAMED;
+					type->data.type.named.name = "bool";
+					if (!typeEquals(operandType, type)) {
+						errorFromCause("Expected a boolean", expr->token);
+						return NULL;
+					}
+					return  operandType;
+				}
+				case '*': {
+					type->kind = NODE_EXPR_TYPE_PTR;
+					type->data = (Expr){
+						.type.pointer.isMut = false,
+						.type.pointer.isSlice = false,
+						.type.pointer.operand = operandType,
+					};
+					return type;
+				}
+				default: {
+					errorFromCause("Unknown unary operator", expr->token);
+					return NULL;
+				}
+			}
+		}
 		case NODE_EXPR_IF: {
 			ExprNode* condType = typecheckExpr(arena, expr->data.ifExpr.condition, scope);
 			if (condType == NULL || condType->kind != NODE_EXPR_TYPE_NAMED || strcmp(condType->data.type.named.name, "bool") != 0) {

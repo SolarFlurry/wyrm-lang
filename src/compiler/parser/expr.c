@@ -112,6 +112,7 @@ static ExprNode* parseExprBP(ArenaAllocator* arena, int minBP) {
 	if (isPrefixOp(lookahead(0)->type)) {
 		lhs = MAKE_NODE(arena, ExprNode, NODE_EXPR_UNOP);
 		BindingPower bp = prefixBp(lookahead(0)->type);
+		lhs->data.unaryOp.op = lookahead(0)->start[0];
 		next();
 		lhs->data.unaryOp.operand = parseExprBP(arena, bp.right);
 	} else {
@@ -138,6 +139,7 @@ static ExprNode* parseExprBP(ArenaAllocator* arena, int minBP) {
 				unaryOp->data.funcCall.argsCount = exprs.length;
 				lhs = unaryOp;
 			} else {
+				lhs->data.unaryOp.op = lookahead(0)->start[0];
 				next();
 				unaryOp->data.unaryOp.operand = lhs;
 				lhs = unaryOp;
