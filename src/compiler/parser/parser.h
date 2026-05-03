@@ -17,7 +17,7 @@ typedef struct {
 
 void consume(TokenType type, const char* message);
 void next();
-Token* lookahead(size_t offset);
+Token lookahead(size_t offset);
 
 AstNode* parse(ArenaAllocator* arena);
 

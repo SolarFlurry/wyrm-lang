@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vm/chunk.h"
+#include "lexer/lexer.h"
 
 typedef struct {
 	const char* source;

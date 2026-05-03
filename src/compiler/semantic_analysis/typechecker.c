@@ -1,6 +1,7 @@
 #include "semantic_analysis.h"
 
 #include "../error/error.h"
+#include "compiler/compiler.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdalign.h>
@@ -34,9 +35,9 @@ bool typeEquals(ExprNode* type, ExprNode* type2) {
 void typecheckVarDec(ArenaAllocator* arena, DeclNode* decl, Scope* scope) {
 	switch (decl->data.var.varType) {
 		case VAR_LOCAL: case VAR_LOCAL_MUT: {
-			Token* lvalue = decl->data.lvalue;
+			Token lvalue = decl->data.lvalue;
 
-			char* name = createOwnedString(arena, lvalue->start, lvalue->length);
+			char* name = createOwnedString(arena, &getSource()[lvalue.start], lvalue.length);
 
 			AstNode* initialType = typecheckExpr(arena, decl->data.var.initial, scope);
 			if (decl->data.var.type != NULL && !typeEquals(decl->data.var.type, initialType)) {
@@ -72,11 +73,11 @@ void typecheckFuncDec(ArenaAllocator* arena, DeclNode* decl, Scope* scope) {
 	funcScope->isFuncScope = true;
 
 	for (int i = 0; i < decl->data.func.paramCount; i++) {
-		Token* name = decl->data.func.paramNames[i];
+		Token name = decl->data.func.paramNames[i];
 		Symbol* added = scopeAddSymbol(
 			arena,
 			funcScope,
-			createOwnedString(arena, name->start, name->length),
+			createOwnedString(arena, &getSource()[name.start], name.length),
 			VAR_LOCAL,
 			decl->data.func.paramTypes[i],
 			NULL
@@ -101,7 +102,7 @@ void typecheckStmt(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 			ExprNode* type = typecheckExpr(arena, ast, scope);
 			ast->data.expr.unusedResult = false;
 			if (type != NULL) {
-				warn("Unused result of expression", ast->token->line, ast->token->col);
+				warn("Unused result of expression", ast->token.line, ast->token.col);
 				ast->data.expr.unusedResult = true;
 			}
 		}

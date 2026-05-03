@@ -10,21 +10,40 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/main.zig"),
             .target = target,
             .optimize = optimize,
+            .link_libc = true,
         }),
     });
-
-    const clap = b.dependency("clap", .{});
-    wyrm_exe.root_module.addImport("clap", clap.module("clap"));
 
     const test_exe = b.addExecutable(.{
         .name = "test",
         .root_module = b.createModule(.{
             .target = target,
             .optimize = .ReleaseSmall,
+            .link_libcpp = true,
         }),
     });
 
-    test_exe.addCSourceFile(.{
+    const clap = b.dependency("clap", .{});
+    wyrm_exe.root_module.addImport("clap", clap.module("clap"));
+
+    const compiler_c = b.addTranslateC(.{
+        .root_source_file = b.path("src/compiler/compiler.h"),
+        .optimize = optimize,
+        .target = target,
+    });
+
+    const vm_c = b.addTranslateC(.{
+        .root_source_file = b.path("src/vm/debug.h"),
+        .optimize = optimize,
+        .target = target,
+    });
+
+    compiler_c.addIncludePath(b.path("src/"));
+    vm_c.addIncludePath(b.path("src/"));
+    wyrm_exe.root_module.addImport("c", compiler_c.createModule());
+    wyrm_exe.root_module.addImport("vm", vm_c.createModule());
+
+    test_exe.root_module.addCSourceFile(.{
         .language = .cpp,
         .file = b.path("src/test.cpp"),
         .flags = &.{"-std=c++23"},
@@ -39,7 +58,7 @@ pub fn build(b: *std.Build) void {
     //     .flags = &.{"-std=c++23"},
     // });
 
-    wyrm_exe.addCSourceFiles(.{
+    wyrm_exe.root_module.addCSourceFiles(.{
         .language = .c,
         .files = &.{
             "src/utils/memory.c",
@@ -47,7 +66,7 @@ pub fn build(b: *std.Build) void {
             "src/vm/debug.c",
             "src/vm/value.c",
             "src/vm/vm.c",
-            "src/compiler/lexer/lexer.c",
+            //"src/compiler/lexer/lexer.c",
             "src/compiler/parser/parser.c",
             "src/compiler/parser/expr.c",
             "src/compiler/parser/decl.c",
@@ -66,14 +85,11 @@ pub fn build(b: *std.Build) void {
         },
     });
 
-    wyrm_exe.addIncludePath(b.path("src/"));
+    wyrm_exe.root_module.addIncludePath(b.path("src/"));
 
     wyrm_exe.linkage = .dynamic;
-    wyrm_exe.linkLibC();
-    wyrm_exe.linkLibCpp();
 
     test_exe.linkage = .dynamic;
-    test_exe.linkLibCpp();
 
     b.installArtifact(wyrm_exe);
     b.installArtifact(test_exe);

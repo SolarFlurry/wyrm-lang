@@ -1,6 +1,7 @@
 #include "codegen.h"
 
 #include "compiler/error/error.h"
+#include "compiler/compiler.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -64,10 +65,10 @@ Chunk generateBytecode(AstNode* ast, Scope* scope, ArenaAllocator* arena) {
 void genStmt(AstNode* stmt, Scope* scope) {
 	switch (stmt->kind) {
 		case NODE_DECL_FUNC: {
-			Token* lvalue = stmt->data.decl.lvalue;
-			char* string = (char*)malloc(lvalue->length + 1);
-			memcpy(string, lvalue->start, lvalue->length);
-			string[lvalue->length] = '\0';
+			Token lvalue = stmt->data.decl.lvalue;
+			char* string = (char*)malloc(lvalue.length + 1);
+			memcpy(string, &getSource()[lvalue.start], lvalue.length);
+			string[lvalue.length] = '\0';
 
 			if (strcmp(string, "main") == 0) {
 				ctx.mainLocation = ctx.chunk->length;
@@ -100,9 +101,9 @@ void genExpression(AstNode* expr, Scope* scope) {
 		case NODE_EXPR_LITERAL: {
 			switch (expr->data.expr.literal.type) {
 				case LIT_INT: {
-					char* string = (char*)malloc(expr->token->length + 1);
-					memcpy(string, expr->token->start, expr->token->length);
-					string[expr->token->length] = '\0';
+					char* string = (char*)malloc(expr->token.length + 1);
+					memcpy(string, &getSource()[expr->token.start], expr->token.length);
+					string[expr->token.length] = '\0';
 
 					int value = atoi(string);
 
@@ -115,7 +116,7 @@ void genExpression(AstNode* expr, Scope* scope) {
 				} break;
 				case LIT_BOOL: {
 					uint8_t constant = 0;
-					if (expr->token->type == TOK_KEYWORD_TRUE) {
+					if (expr->token.type == TOK_KEYWORD_TRUE) {
 						constant = addConstant(ctx.chunk, (Value){.as = {.i32 = 1}});
 					} else {
 						constant = addConstant(ctx.chunk, (Value){.as = {.i32 = 1}});

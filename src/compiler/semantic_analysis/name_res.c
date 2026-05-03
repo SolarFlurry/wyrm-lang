@@ -1,6 +1,7 @@
 #include "semantic_analysis.h"
 
 #include "../error/error.h"
+#include "compiler/compiler.h"
 #include <stdio.h>
 #include <stdalign.h>
 
@@ -12,8 +13,8 @@ static void resolveNode(ArenaAllocator* arena, DeclNode* decl, Scope* scope) {
 				return;
 			}
 			
-			Token* lvalue = decl->data.lvalue;
-			char* s = createOwnedString(arena, lvalue->start, lvalue->length);
+			Token lvalue = decl->data.lvalue;
+			char* s = createOwnedString(arena, &getSource()[lvalue.start], lvalue.length);
 
 			AstNode* initialType = typecheckExpr(arena, decl->data.var.initial, scope);
 			if (decl->data.var.type && !typeEquals(decl->data.var.type, initialType)) {
@@ -27,8 +28,8 @@ static void resolveNode(ArenaAllocator* arena, DeclNode* decl, Scope* scope) {
 			}
 		} break;
 		case NODE_DECL_FUNC: {
-			Token* lvalue = decl->data.lvalue;
-			char* s = createOwnedString(arena, lvalue->start, lvalue->length);
+			Token lvalue = decl->data.lvalue;
+			char* s = createOwnedString(arena, &getSource()[lvalue.start], lvalue.length);
 			ExprNode* type = ARENA_ALLOC(arena, ExprNode, 1);
 			type->kind = NODE_EXPR_TYPE_FUNC;
 			type->data.type.func.paramCount = decl->data.func.paramCount;

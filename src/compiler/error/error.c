@@ -42,12 +42,12 @@ void error(const char* message, uint32_t line, uint32_t col) {
 	}
 	errors[errorCount++] = (ErrorInformation) { line, col, 1, message };
 }
-void errorFromCause(const char* message, Token* cause) {
+void errorFromCause(const char* message, Token cause) {
 	if (errorCount >= MAX_ERRORS) {
 		printf("exceeded max errors");
 		return;
 	}
-	errors[errorCount++] = (ErrorInformation) { cause->line, cause->col, cause->length, message };
+	errors[errorCount++] = (ErrorInformation) { cause.line, cause.col, cause.length, message };
 }
 void warn(const char* message, uint32_t line, uint32_t col) {
 	if (warningCount >= MAX_ERRORS) {
@@ -56,12 +56,12 @@ void warn(const char* message, uint32_t line, uint32_t col) {
 	}
 	warnings[warningCount++] = (ErrorInformation) { line, col, 1, message };
 }
-void warnFromCause(const char* message, Token* cause) {
+void warnFromCause(const char* message, Token cause) {
 	if (warningCount >= MAX_ERRORS) {
 		printf("exceeded max errors");
 		return;
 	}
-	warnings[warningCount++] = (ErrorInformation) { cause->line, cause->col, cause->length, message };
+	warnings[warningCount++] = (ErrorInformation) { cause.line, cause.col, cause.length, message };
 }
 
 size_t errorsCount() {

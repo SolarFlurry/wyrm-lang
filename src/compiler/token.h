@@ -2,7 +2,7 @@
 
 #include "utils/common.h"
 
-typedef enum {
+typedef enum TokenType {
 	TOK_EOF,
 	TOK_UNKNOWN,
 
@@ -31,9 +31,13 @@ typedef enum {
 	TOK_KEYWORD_TRUE,
 
 	TOK_PLUS,
+	TOK_PLUS_EQ,
 	TOK_MINUS,
+	TOK_MINUS_EQ,
 	TOK_ASTERISK,
+	TOK_ASTERISK_EQ,
 	TOK_SLASH,
+	TOK_SLASH_EQ,
 	TOK_PERCENT, // !
 	TOK_BACKSLASH,
 	TOK_MINUS_RARROW,
@@ -68,10 +72,10 @@ typedef enum {
 
 const char* describeTokenType(TokenType type);
 
-typedef struct {
+typedef struct Token {
 	TokenType type;
-	const char* start;
-	size_t length;
+	uint32_t start;
+	uint32_t length;
 	uint32_t line;
 	uint32_t col;
 } Token;

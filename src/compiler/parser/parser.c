@@ -7,24 +7,26 @@
 
 #include "../error/error.h"
 
-Token* parseTok;
+Token parseTok;
 
 void consume(TokenType type, const char* message) {
-	if (parseTok->type != type) {
-		if (parseTok->type == TOK_UNKNOWN) return;
+	if (parseTok.type != type) {
+		if (parseTok.type == TOK_UNKNOWN) return;
 		errorFromCause(message, parseTok);
 	} else next();
 }
 void consumeUntil(TokenType type) {
-	while (lookahead(0)->type != type) {
+	while (lookahead(0).type != type) {
 		next();
 	}
 }
 void next() {
+    printTokData(&parseTok);
+    printf(" - line: %d col: %d\n", parseTok.line, parseTok.col);
 	parseTok = nextToken();
 }
 
-Token* lookahead(size_t offset) {
+Token lookahead(size_t offset) {
 	return parseTok;
 }
 
@@ -33,7 +35,7 @@ AstNode* parse(ArenaAllocator* arena) {
 
 	GrowableArray decls = GROWABLE_ARRAY_NEW(DeclNode*, arena);
 
-	while (lookahead(0)->type != TOK_EOF) {
+	while (lookahead(0).type != TOK_EOF) {
 		DeclNode* decl = parseDecl(arena);
 		
 		DeclNode** slot = (DeclNode**)growableArrayPush(&decls);

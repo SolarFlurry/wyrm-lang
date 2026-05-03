@@ -24,7 +24,7 @@ void compileCst(const char* source, const char* filename) {
 	compiler.filename = filename;
 	
 	clock_t parseStart = clock();
-	initLexer(&allocator, source);
+	initLexer(source);
 	parseCst(&allocator);
 	printEvents();
 }
@@ -37,7 +37,7 @@ uint8_t compile(const char* source, const char* filename, Chunk* result) {
 	compiler.filename = filename;
 	
 	clock_t parseStart = clock();
-	initLexer(&allocator, source);
+	initLexer(source);
 	AstNode* ast = parse(&allocator);
 
 	if (errorsCount() > 0) {

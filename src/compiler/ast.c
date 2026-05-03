@@ -1,5 +1,7 @@
 #include "ast.h"
 
+#include "compiler/compiler.h"
+
 #include <stdio.h>
 
 AstNode* exprToAst(ArenaAllocator* arena, ExprNode* expr) {
@@ -52,8 +54,8 @@ void printAST(AstNode* ast, uint32_t indent, int indent_type, uint64_t has_lines
         } break;
         case NODE_DECL_VAR: {
             printf("VarDecl\x1b[0m => \x1b[35m'");
-            for (int i = 0; i < ast->data.decl.lvalue->length; i++) {
-                putchar(ast->data.decl.lvalue->start[i]);
+            for (int i = 0; i < ast->data.decl.lvalue.length; i++) {
+                putchar(getSource()[ast->data.decl.lvalue.start + i]);
             }
             puts("'\x1b[0m");
             if (ast->data.decl.var.type != NULL) {
@@ -63,8 +65,8 @@ void printAST(AstNode* ast, uint32_t indent, int indent_type, uint64_t has_lines
         } break;
         case NODE_DECL_FUNC: {
             printf("FuncDecl\x1b[0m => \x1b[35m'");
-            for (int i = 0; i < ast->data.decl.lvalue->length; i++) {
-                putchar(ast->data.decl.lvalue->start[i]);
+            for (int i = 0; i < ast->data.decl.lvalue.length; i++) {
+                putchar(getSource()[ast->data.decl.lvalue.start + i]);
             }
             puts("'\x1b[0m");
             for (int i = 0; i < ast->data.decl.func.stmtCount; i++) {
@@ -77,8 +79,8 @@ void printAST(AstNode* ast, uint32_t indent, int indent_type, uint64_t has_lines
         } break;
         case NODE_EXPR_IDENT: {
             printf("Identifier\x1b[0m => \x1b[35m'");
-            for (int i = 0; i < ast->token->length; i++) {
-                putchar(ast->token->start[i]);
+            for (int i = 0; i < ast->token.length; i++) {
+                putchar(getSource()[ast->token.start + i]);
             }
             printf("'\x1b[0m\n");
         } break;
@@ -94,15 +96,15 @@ void printAST(AstNode* ast, uint32_t indent, int indent_type, uint64_t has_lines
                 default: {} // do nothing
             }
             printf("\x1b[0m \x1b[33m'");
-            for (int i = 0; i < ast->token->length; i++) {
-                putchar(ast->token->start[i]);
+            for (int i = 0; i < ast->token.length; i++) {
+                putchar(getSource()[ast->token.start + i]);
             }
             printf("'\x1b[0m\n");
         } break;
         case NODE_EXPR_BINOP: {
             printf("BinaryOp\x1b[0m '");
-            for (int i = 0; i < ast->token->length; i++) {
-                putchar(ast->token->start[i]);
+            for (int i = 0; i < ast->token.length; i++) {
+                putchar(getSource()[ast->token.start + i]);
             }
             printf("'\n");
             printAST(ast->data.expr.binaryOp.lhs, indent + 1, 1, has_lines << 1 | 1);

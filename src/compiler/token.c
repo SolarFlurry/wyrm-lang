@@ -1,4 +1,6 @@
 #include "token.h"
+
+#include "compiler.h"
 #include <stdio.h>
 
 const char* describeTokenType(TokenType type) {
@@ -17,6 +19,6 @@ const char* describeTokenType(TokenType type) {
 
 void printTokData(Token* tok) {
 	for (int i = 0; i < tok->length; i++) {
-		putchar(tok->start[i]);
+		putchar(getSource()[tok->start + i]);
 	}
 }

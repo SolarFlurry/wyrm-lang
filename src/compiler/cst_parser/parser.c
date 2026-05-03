@@ -52,7 +52,7 @@ static inline void quantumLeap() {
     slot->kind = CST_EVENT_ADVANCE;
     slot->advance.tok = currentToken;
     
-    currentToken = *nextToken();
+    currentToken = nextToken();
 }
 
 static inline Token tok() {
@@ -92,7 +92,7 @@ static void advanceWithError(ArenaAllocator* arena) {
 
 void parseCst(ArenaAllocator* arena) {
     events = growableArrayCreate(arena, sizeof(CstEvent), alignof(CstEvent));
-    currentToken = *nextToken();
+    currentToken = nextToken();
     size_t mark = open(arena);
 
     while (!eof()) {

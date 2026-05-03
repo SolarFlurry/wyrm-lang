@@ -4,18 +4,13 @@
 #include "utils/memory.h"
 #include "../token.h"
 
-typedef struct {
-	const char* current;
-	const char* start;
+typedef struct Lexer {
+	uint32_t index;
 	uint32_t line;
 	uint32_t col;
-	ArenaAllocator* arena;
+	const char* source;
 } Lexer;
 
-void initLexer(ArenaAllocator* arena, const char* program);
+void initLexer(const char* source);
 
-bool isEnd();
-char peek(size_t offset);
-void advance();
-void skipWhitespace();
-Token* nextToken();
+Token nextToken();

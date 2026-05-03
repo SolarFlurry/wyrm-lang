@@ -80,7 +80,7 @@ typedef struct Expr {
 			size_t argsCount;
 		} funcCall;
 		struct {
-			Token* builtin;
+			Token builtin;
 			AstNode** args;
 			size_t argsCount;
 		} builtinCall;
@@ -95,7 +95,7 @@ typedef struct Expr {
 			AstNode* operand;
 		} unaryOp;
 		struct {
-			Token** paramNames;
+			Token* paramNames;
 			AstNode** paramTypes;
 			size_t paramCount;
 			AstNode* body;
@@ -140,7 +140,7 @@ typedef struct Expr {
 } Expr;
 
 typedef struct Decl {
-	Token* lvalue;
+	Token lvalue;
 	bool isPublic;
 	struct {
 		VarDeclType varType;
@@ -150,7 +150,7 @@ typedef struct Decl {
 	struct {
 		ExprNode** paramTypes;
 		size_t paramCount;
-		Token** paramNames;
+		Token* paramNames;
 		AstNode* returnType;
 		AstNode** stmts;
 		size_t stmtCount;
@@ -160,19 +160,19 @@ typedef struct Decl {
 
 typedef struct ExprNode {
 	NodeKind kind;
-	Token* token;
+	Token token;
 	Expr data;
 } ExprNode;
 
 typedef struct DeclNode {
 	NodeKind kind;
-	Token* token;
+	Token token;
 	Decl data;
 } DeclNode;
 
 typedef struct AstNode {
 	NodeKind kind;
-	Token* token;
+	Token token;
 	union {
 		struct {
 			DeclNode** decls;
