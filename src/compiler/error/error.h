@@ -9,12 +9,13 @@ typedef struct {
 	uint32_t line;
 	uint32_t col;
 	uint32_t length;
+    uint32_t start;
 	const char* message;
 } ErrorInformation;
 
-void error(const char* message, uint32_t line, uint32_t col);
+void error(const char* message, uint32_t line, uint32_t col, uint32_t start);
 void errorFromCause(const char* message, Token cause);
-void warn(const char* message, uint32_t line, uint32_t col);
+void warn(const char* message, uint32_t line, uint32_t col, uint32_t start);
 void warnFromCause(const char* message, Token cause);
 void printErrors();
 size_t errorsCount();

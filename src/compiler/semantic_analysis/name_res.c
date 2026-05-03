@@ -50,7 +50,7 @@ static void resolveNode(ArenaAllocator* arena, DeclNode* decl, Scope* scope) {
 
 void resolveNames(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 	if (ast->kind != NODE_PROGRAM) {
-		error("name resolution: Expected a program node", 0, 0);
+		error("name resolution: Expected a program node", 0, 0, 0);
 		return;
 	}
 	for (int i = 0; i < ast->data.program.declCount; i++) {

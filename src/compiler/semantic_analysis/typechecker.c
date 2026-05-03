@@ -102,7 +102,7 @@ void typecheckStmt(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 			ExprNode* type = typecheckExpr(arena, ast, scope);
 			ast->data.expr.unusedResult = false;
 			if (type != NULL) {
-				warn("Unused result of expression", ast->token.line, ast->token.col);
+				warn("Unused result of expression", ast->token.line, ast->token.col, ast->token.start);
 				ast->data.expr.unusedResult = true;
 			}
 		}
@@ -111,7 +111,7 @@ void typecheckStmt(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 
 void typeCheck(ArenaAllocator* arena, AstNode* ast, Scope* scope) {
 	if (ast->kind != NODE_PROGRAM) {
-		error("Type Checker: Expected a program node", 0, 0);
+		error("Type Checker: Expected a program node", 0, 0, 0);
 		return;
 	}
 	for (int i = 0; i < ast->data.program.declCount; i++) {

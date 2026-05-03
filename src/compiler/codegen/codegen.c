@@ -43,7 +43,7 @@ static void initCodegen(CodegenContext* ctx, ArenaAllocator* arena, Chunk* chunk
 
 Chunk generateBytecode(AstNode* ast, Scope* scope, ArenaAllocator* arena) {
 	if (ast->kind != NODE_PROGRAM) {
-		error("Argument to bytecode not a program", 0, 0);
+		error("Argument to bytecode not a program", 0, 0, 0);
 	}
 
 	Chunk bytecode;

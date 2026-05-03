@@ -21,8 +21,6 @@ void consumeUntil(TokenType type) {
 	}
 }
 void next() {
-    printTokData(&parseTok);
-    printf(" - line: %d col: %d\n", parseTok.line, parseTok.col);
 	parseTok = nextToken();
 }
 

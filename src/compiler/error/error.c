@@ -10,58 +10,47 @@ static ErrorInformation warnings[MAX_ERRORS];
 static size_t errorCount = 0;
 static size_t warningCount = 0;
 
-static char* getLine(uint32_t lineNum) {
-	const char* lineStart = getSource();
-	int currentLine = 0;
-	while (currentLine < lineNum) {
-		lineStart = strchr(lineStart, '\n');
-		if (lineStart == NULL) {
-			return NULL;
-		}
-		lineStart += 1;
-		currentLine += 1;
+static uint32_t getLineStart(uint32_t targetIdx) {
+    const char* source = getSource();
+	uint32_t lineStart = 0;
+    uint32_t index = 0;
+	while (index < targetIdx) {
+        if (source[index] == 0) break;
+        if (source[index] == '\n') {
+            lineStart = index + 1;
+        }
+        index += 1;
 	}
-	int lineSize;
-	const char* lineEnd = strchr(lineStart, '\n');
-	if (lineEnd == NULL) {
-		lineSize = strlen(lineStart);
-	} else {
-		lineSize = lineEnd - lineStart;
-	}
-	char* line = (char*)malloc(sizeof(char) * (lineSize + 1));
-	memcpy(line, lineStart, lineSize);
-	line[lineSize] = '\0';
-
-	return line;
+    return lineStart;
 }
 
-void error(const char* message, uint32_t line, uint32_t col) {
+void error(const char* message, uint32_t line, uint32_t col, uint32_t start) {
 	if (errorCount >= MAX_ERRORS) {
 		printf("exceeded max errors");
 		return;
 	}
-	errors[errorCount++] = (ErrorInformation) { line, col, 1, message };
+	errors[errorCount++] = (ErrorInformation) { line, col, 1, start, message };
 }
 void errorFromCause(const char* message, Token cause) {
 	if (errorCount >= MAX_ERRORS) {
 		printf("exceeded max errors");
 		return;
 	}
-	errors[errorCount++] = (ErrorInformation) { cause.line, cause.col, cause.length, message };
+	errors[errorCount++] = (ErrorInformation) { cause.line, cause.col, cause.length, cause.start, message };
 }
-void warn(const char* message, uint32_t line, uint32_t col) {
+void warn(const char* message, uint32_t line, uint32_t col, uint32_t start) {
 	if (warningCount >= MAX_ERRORS) {
 		printf("exceeded max warnings");
 		return;
 	}
-	warnings[warningCount++] = (ErrorInformation) { line, col, 1, message };
+	warnings[warningCount++] = (ErrorInformation) { line, col, 1, start, message };
 }
 void warnFromCause(const char* message, Token cause) {
 	if (warningCount >= MAX_ERRORS) {
 		printf("exceeded max errors");
 		return;
 	}
-	warnings[warningCount++] = (ErrorInformation) { cause.line, cause.col, cause.length, message };
+	warnings[warningCount++] = (ErrorInformation) { cause.line, cause.col, cause.length, cause.start, message };
 }
 
 size_t errorsCount() {
@@ -69,26 +58,41 @@ size_t errorsCount() {
 }
 
 static void printError(ErrorInformation info, bool isWarn) {
-	char* line = getLine(info.line);
+	uint32_t lineStart = getLineStart(info.start);
 	printf(
-		"%s\x1b[0m %s\n \x1b[34;1m-->\x1b[0;2;3m %s:%u:%u\x1b[0m\n\x1b[34;1m%4u |\x1b[0m %s\n       ",
+		"%s\x1b[0m %s\n \x1b[34;1m-->\x1b[0;3m %s:%u:%u\x1b[0m\n\x1b[34;1m%4u |\x1b[0;2m",
 		isWarn ? "\x1b[33;1m[Warning]" : "\x1b[31;1m[Error]",
 		info.message,
 		getFilename(),
 		info.line+1,
 		info.col,
-		info.line+1,
-		line
+		info.line+1
 	);
-	free(line);
+
+    const char* source = getSource();
+    
+    for (uint32_t i = lineStart; i < info.start; i++) {
+        putchar(source[i]);
+    }
+    printf("\x1b[22;31m");
+    for (uint32_t i = info.start; i < info.start + info.length; i++) {
+        putchar(source[i]);
+    }
+    printf("\x1b[0;2m");
+    for (uint32_t i = info.start + info.length; source[i] != '\n'; i++) {
+        putchar(source[i]);
+    }
+    printf("\x1b[0m\n      ");
+
 	for (int i = 0; i < info.col; i++) {
 		putchar(' ');
 	}
-	printf("\x1b[1;92m");
+    printf("\x1b[1;31m");
+
 	for (int i = 0; i < info.length; i++) {
 		putchar('^');
 	}
-	printf(" %s occured here\x1b[0m\n", isWarn ? "Warning" : "Error");
+	printf("\x1b[92;1m %s occured here\x1b[0m\n", isWarn ? "Warning" : "Error");
 }
 
 void printErrors() {
