@@ -1,0 +1,9 @@
+If:
+  PathMatch: [.*\.cpp, .*\.hpp]
+CompileFlags:
+  Add: [-std=c++23]
+
+---
+
+CompileFlags:
+  Add: [-Isrc]
