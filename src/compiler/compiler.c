@@ -8,7 +8,7 @@
 #include "ast.h"
 #include "error/error.h"
 #include "utils/memory.h"
-#include "compiler/cst_parser/parser.h"
+// #include "compiler/cst_parser/parser.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,16 +17,17 @@
 Compiler compiler;
 
 void compileCst(const char* source, const char* filename) {
-	ArenaAllocator allocator;
-	arenaInit(&allocator, 65536);
-
-	compiler.source = source;
-	compiler.filename = filename;
-	
-	clock_t parseStart = clock();
-	initLexer(source);
-	parseCst(&allocator);
-	printEvents();
+    printf("CST parsing is deprecated");
+	// ArenaAllocator allocator;
+	// arenaInit(&allocator, 65536);
+	//
+	// compiler.source = source;
+	// compiler.filename = filename;
+	//
+	// clock_t parseStart = clock();
+	// lx_init(source);
+	// parseCst(&allocator);
+	// printEvents();
 }
 
 uint8_t compile(const char* source, const char* filename, Chunk* result) {
@@ -37,8 +38,9 @@ uint8_t compile(const char* source, const char* filename, Chunk* result) {
 	compiler.filename = filename;
 	
 	clock_t parseStart = clock();
-	initLexer(source);
-	AstNode* ast = parse(&allocator);
+	Lexer lexer = lx_init(source);
+    Parser parser = p_init(lexer, allocator);
+	AstNode* ast = p_parse(&parser);
 
 	if (errorsCount() > 0) {
 		printf("Arena allocated %lu bytes\n", allocator.totalAllocated);

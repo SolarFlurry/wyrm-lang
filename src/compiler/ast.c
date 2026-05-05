@@ -5,7 +5,13 @@
 #include <stdio.h>
 
 AstNode* exprToAst(ArenaAllocator* arena, ExprNode* expr) {
-
+    AstNode* ast = ARENA_ALLOC(arena, AstNode, 1);
+    *ast = (AstNode){
+        .data.expr = expr->data,
+        .kind = expr->kind,
+        .token = expr->token,
+    };
+    return ast;
 }
 AstNode* declToAst(ArenaAllocator* arena, DeclNode* decl) {
     AstNode* ast = ARENA_ALLOC(arena, AstNode, 1);
@@ -112,6 +118,7 @@ void printAST(AstNode* ast, uint32_t indent, int indent_type, uint64_t has_lines
         } break;
         case NODE_EXPR_UNOP: {
             printf("UnaryOp\x1b[0m '%c'\n", ast->data.expr.unaryOp.op);
+            printAST(ast->data.expr.unaryOp.operand, indent + 1, 2, has_lines << 1);
         } break;
         case NODE_EXPR_CALL: {
             printf("FuncCall\x1b[0m (%zu args):\n", ast->data.expr.funcCall.argsCount);

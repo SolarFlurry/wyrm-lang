@@ -80,7 +80,7 @@ pub fn build(b: *std.Build) void {
             "src/compiler/semantic_analysis/name_res.c",
             "src/compiler/semantic_analysis/typechecker.c",
             "src/compiler/semantic_analysis/expr.c",
-            "src/compiler/cst_parser/parser.c",
+            // "src/compiler/cst_parser/parser.c",
             "src/compiler/common/cst.c",
         },
     });

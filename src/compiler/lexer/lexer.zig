@@ -48,10 +48,8 @@ const State = enum {
     slash,
 };
 
-var lx: Lexer = undefined;
-
-export fn initLexer(source: [*:0]const u8) callconv(.c) void {
-    lx = .{
+export fn lx_init(source: [*:0]const u8) callconv(.c) Lexer {
+    return .{
         .index = 0,
         .line = 0,
         .col = 0,
@@ -59,7 +57,7 @@ export fn initLexer(source: [*:0]const u8) callconv(.c) void {
     };
 }
 
-export fn nextToken() callconv(.c) Token {
+export fn lx_nextTok(lx: *Lexer) callconv(.c) Token {
     var result: Token = .{
         .line = lx.line,
         .col = lx.col,
@@ -77,16 +75,10 @@ export fn nextToken() callconv(.c) Token {
                 .col = lx.col,
             },
             ' ', '\t', '\n', '\r' => {
-                advance(&lx);
+                advance(lx);
                 result.start = lx.index;
-                switch (lx.source[lx.index]) {
-                    ' ', '\t', '\n', '\r' => {},
-                    else => {
-                        result.line = lx.line;
-                        result.col = lx.col;
-                        result.start = lx.index;
-                    },
-                }
+                result.col = lx.col;
+                result.line = lx.line;
                 continue :state .start;
             },
             'a'...'z', 'A'...'Z', '_' => {
@@ -103,59 +95,59 @@ export fn nextToken() callconv(.c) Token {
             '*' => continue :state .asterisk,
             '/' => continue :state .slash,
             '(' => {
-                advance(&lx);
+                advance(lx);
                 result.type = c.TOK_LPAREN;
             },
             ')' => {
-                advance(&lx);
+                advance(lx);
                 result.type = c.TOK_RPAREN;
             },
             '[' => {
-                advance(&lx);
+                advance(lx);
                 result.type = c.TOK_LBRACK;
             },
             ']' => {
-                advance(&lx);
+                advance(lx);
                 result.type = c.TOK_RBRACK;
             },
             '{' => {
-                advance(&lx);
+                advance(lx);
                 result.type = c.TOK_LBRACE;
             },
             '}' => {
-                advance(&lx);
+                advance(lx);
                 result.type = c.TOK_RBRACE;
             },
             ';' => {
-                advance(&lx);
+                advance(lx);
                 result.type = c.TOK_SEMICOLON;
             },
             ':' => {
-                advance(&lx);
+                advance(lx);
                 result.type = c.TOK_COLON;
             },
             '!' => {
-                advance(&lx);
+                advance(lx);
                 result.type = c.TOK_BANG;
             },
             else => continue :state .invalid,
         },
         .invalid => {
-            advance(&lx);
+            advance(lx);
             switch (lx.source[lx.index]) {
                 0, '\n' => result.type = c.TOK_UNKNOWN,
                 else => continue :state .invalid,
             }
         },
         .comment => {
-            advance(&lx);
+            advance(lx);
             switch (lx.source[lx.index]) {
                 0, '\n' => continue :state .start,
                 else => continue :state .comment,
             }
         },
         .identifier => {
-            advance(&lx);
+            advance(lx);
             switch (lx.source[lx.index]) {
                 'a'...'z', 'A'...'Z', '_', '0'...'9', '\'' => continue :state .identifier,
                 else => {
@@ -167,72 +159,72 @@ export fn nextToken() callconv(.c) Token {
             }
         },
         .integer => {
-            advance(&lx);
+            advance(lx);
             switch (lx.source[lx.index]) {
                 '0'...'9', '_' => continue :state .integer,
                 '.' => {
-                    advance(&lx);
+                    advance(lx);
                     result.type = c.TOK_FLOAT;
                 },
                 else => {},
             }
         },
         .float => {
-            advance(&lx);
+            advance(lx);
             switch (lx.source[lx.index]) {
                 '0'...'9', '_' => continue :state .float,
                 else => {},
             }
         },
         .equal => {
-            advance(&lx);
+            advance(lx);
             switch (lx.source[lx.index]) {
                 '=' => {
-                    advance(&lx);
+                    advance(lx);
                     result.type = c.TOK_EQ_EQ;
                 },
                 else => result.type = c.TOK_EQ,
             }
         },
         .plus => {
-            advance(&lx);
+            advance(lx);
             switch (lx.source[lx.index]) {
                 '=' => {
-                    advance(&lx);
+                    advance(lx);
                     result.type = c.TOK_PLUS_EQ;
                 },
                 else => result.type = c.TOK_PLUS,
             }
         },
         .minus => {
-            advance(&lx);
+            advance(lx);
             switch (lx.source[lx.index]) {
                 '=' => {
-                    advance(&lx);
+                    advance(lx);
                     result.type = c.TOK_MINUS_EQ;
                 },
                 else => result.type = c.TOK_MINUS,
             }
         },
         .asterisk => {
-            advance(&lx);
+            advance(lx);
             switch (lx.source[lx.index]) {
                 '=' => {
-                    advance(&lx);
+                    advance(lx);
                     result.type = c.TOK_ASTERISK_EQ;
                 },
                 else => result.type = c.TOK_ASTERISK,
             }
         },
         .slash => {
-            advance(&lx);
+            advance(lx);
             switch (lx.source[lx.index]) {
                 '=' => {
-                    advance(&lx);
+                    advance(lx);
                     result.type = c.TOK_SLASH_EQ;
                 },
                 '/' => {
-                    advance(&lx);
+                    advance(lx);
                     continue :state .comment;
                 },
                 else => result.type = c.TOK_SLASH,

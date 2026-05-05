@@ -7,39 +7,46 @@
 #include "../ast.h"
 #include "../lexer/lexer.h"
 
-#define MAKE_NODE(arena, type, nodeKind) \
-	(type*)memcpy(ARENA_ALLOC(arena, type, 1), &(type){.kind = nodeKind, .token = lookahead(0)}, sizeof(type))
+#define MAKE_NODE(parser, type, nodeKind) \
+	(type*)memcpy(ARENA_ALLOC(&p->arena, type, 1), &(type){.kind = nodeKind, .token = p_lookahead(parser, 0)}, sizeof(type))
+
+typedef struct Parser {
+    Lexer lx;
+    ArenaAllocator arena;
+} Parser;
 
 typedef struct {
 	int left;
 	int right;
 } BindingPower;
 
-void consume(TokenType type, const char* message);
-void next();
-Token lookahead(size_t offset);
+Parser p_init(Lexer lx, ArenaAllocator arena);
 
-AstNode* parse(ArenaAllocator* arena);
+void p_consume(Parser* p, TokenType type, const char* message);
+void p_next(Parser* p);
+Token p_lookahead(Parser* p, size_t offset);
 
-DeclNode* parseDecl(ArenaAllocator* arena);
-AstNode* parseStatement(ArenaAllocator* arena);
-DeclNode* parseVarDecl(ArenaAllocator* arena);
-DeclNode* parseFuncDecl(ArenaAllocator* arena);
+AstNode* p_parse(Parser* p);
+
+DeclNode* p_parseDecl(Parser* p);
+AstNode* parseStatement(Parser* p);
+DeclNode* parseVarDecl(Parser* p);
+DeclNode* parseFuncDecl(Parser* p);
 void parseParamList(
-	ArenaAllocator* arena,
+	Parser* p,
 	GrowableArray* names,
 	GrowableArray* types,
 	TokenType endSymbol,
 	bool canBeAuto
 );
 
-ExprNode* parseType(ArenaAllocator* arena);
+ExprNode* parseType(Parser* p);
 
 void parseExpressionList(
-	ArenaAllocator* arena,
+	Parser* p,
 	GrowableArray* list,
 	TokenType endSymbol
 );
-ExprNode* parseExpression(ArenaAllocator* arena);
-ExprNode* parseBlock(ArenaAllocator* arena);
-ExprNode* parsePrimary(ArenaAllocator* arena);
+ExprNode* parseExpression(Parser* p);
+ExprNode* parseBlock(Parser* p);
+ExprNode* parsePrimary(Parser* p);

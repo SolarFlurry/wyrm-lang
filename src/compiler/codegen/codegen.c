@@ -29,10 +29,10 @@ static void patchJump(int offset, int with) {
 static void genStmts(int stmtCount, AstNode** stmts, Scope* scope) {
 	for (int i = 0; i < stmtCount; i++) {
 		genStmt(stmts[i], scope);
-			}
+    }
 	for (int i = 0; i < scope->symbols.length; i++) {
 		emitByte(OP_POP);
-			}
+    }
 }
 
 static void initCodegen(CodegenContext* ctx, ArenaAllocator* arena, Chunk* chunk) {

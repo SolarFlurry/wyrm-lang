@@ -9,38 +9,47 @@
 
 Token parseTok;
 
-void consume(TokenType type, const char* message) {
+Parser p_init(Lexer lx, ArenaAllocator arena) {
+    return (Parser) {
+        .arena = arena,
+        .lx = lx,
+    };
+}
+
+void p_consume(Parser* p, TokenType type, const char* message) {
 	if (parseTok.type != type) {
 		if (parseTok.type == TOK_UNKNOWN) return;
 		errorFromCause(message, parseTok);
-	} else next();
+	} else p_next(p);
 }
-void consumeUntil(TokenType type) {
-	while (lookahead(0).type != type) {
-		next();
+void consumeUntil(Parser* p, TokenType type) {
+	while (p_lookahead(p, 0).type != type) {
+		p_next(p);
 	}
 }
-void next() {
-	parseTok = nextToken();
+void p_next(Parser* p) {
+	parseTok = lx_nextTok(&p->lx);
+    printTokData(&parseTok);
+    printf(" type: %d\n", parseTok.type);
 }
 
-Token lookahead(size_t offset) {
+Token p_lookahead(Parser* p, size_t offset) {
 	return parseTok;
 }
 
-AstNode* parse(ArenaAllocator* arena) {
-	parseTok = nextToken();
+AstNode* p_parse(Parser* p) {
+	p_next(p);
 
-	GrowableArray decls = GROWABLE_ARRAY_NEW(DeclNode*, arena);
+	GrowableArray decls = GROWABLE_ARRAY_NEW(DeclNode*, &p->arena);
 
-	while (lookahead(0).type != TOK_EOF) {
-		DeclNode* decl = parseDecl(arena);
+	while (p_lookahead(p, 0).type != TOK_EOF) {
+		DeclNode* decl = p_parseDecl(p);
 		
 		DeclNode** slot = (DeclNode**)growableArrayPush(&decls);
 		*slot = decl;
 	}
 
-	AstNode* program = ARENA_ALLOC(arena, AstNode, 1);
+	AstNode* program = ARENA_ALLOC(&p->arena, AstNode, 1);
 
 	program->kind = NODE_PROGRAM;
 	program->data.program.decls = decls.data;

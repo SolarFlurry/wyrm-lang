@@ -1,3 +1,2 @@
 pub func main() {
-    return !true;
 }

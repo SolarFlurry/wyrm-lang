@@ -58,31 +58,34 @@ size_t errorsCount() {
 }
 
 static void printError(ErrorInformation info, bool isWarn) {
-	uint32_t lineStart = getLineStart(info.start);
 	printf(
-		"%s\x1b[0m %s\n \x1b[34;1m-->\x1b[0;3m %s:%u:%u\x1b[0m\n\x1b[34;1m%4u |\x1b[0;2m",
+		"%s\x1b[0m %s\n \x1b[34;1m-->\x1b[0;3m %s:%u:%u:%u\x1b[0m\n\x1b[34;1m%4u | \x1b[0;2m",
 		isWarn ? "\x1b[33;1m[Warning]" : "\x1b[31;1m[Error]",
 		info.message,
 		getFilename(),
 		info.line+1,
-		info.col,
+		info.col + 1,
+        info.start,
 		info.line+1
 	);
 
     const char* source = getSource();
     
-    for (uint32_t i = lineStart; i < info.start; i++) {
-        putchar(source[i]);
+	uint32_t index = getLineStart(info.start);
+    while (index < info.start) {
+        putchar(source[index]);
+        index++;
     }
     printf("\x1b[22;31m");
-    for (uint32_t i = info.start; i < info.start + info.length; i++) {
-        putchar(source[i]);
+    while (index < info.start + info.length) {
+        putchar(source[index]);
+        index++;
     }
     printf("\x1b[0;2m");
     for (uint32_t i = info.start + info.length; source[i] != '\n'; i++) {
         putchar(source[i]);
     }
-    printf("\x1b[0m\n      ");
+    printf("\x1b[0m\n       ");
 
 	for (int i = 0; i < info.col; i++) {
 		putchar(' ');

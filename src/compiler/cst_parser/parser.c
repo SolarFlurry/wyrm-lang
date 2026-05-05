@@ -52,7 +52,7 @@ static inline void quantumLeap() {
     slot->kind = CST_EVENT_ADVANCE;
     slot->advance.tok = currentToken;
     
-    currentToken = nextToken();
+    currentToken = lx_nextTok();
 }
 
 static inline Token tok() {

@@ -11,6 +11,6 @@ typedef struct Lexer {
 	const char* source;
 } Lexer;
 
-void initLexer(const char* source);
+Lexer lx_init(const char* source);
 
-Token nextToken();
+Token lx_nextTok(Lexer* lx);

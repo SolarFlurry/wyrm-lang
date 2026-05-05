@@ -154,6 +154,7 @@ ExprNode* typecheckExpr(ArenaAllocator* arena, ExprNode* expr, Scope* scope) {
 		}
 
 		default: {
+            printf("cannot typecheck error! node type %d, %u %u %u\n", expr->kind, expr->token.start, expr->token.length, expr->token.type);
 			errorFromCause("cannot typecheck", expr->token);
 		}
 	}
