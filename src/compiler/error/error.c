@@ -76,7 +76,7 @@ static void printError(ErrorInformation info, bool isWarn) {
         putchar(source[index]);
         index++;
     }
-    printf("\x1b[22;31m");
+    printf("\x1b[22;%sm", isWarn ? "33" : "31");
     while (index < info.start + info.length) {
         putchar(source[index]);
         index++;
@@ -90,7 +90,7 @@ static void printError(ErrorInformation info, bool isWarn) {
 	for (int i = 0; i < info.col; i++) {
 		putchar(' ');
 	}
-    printf("\x1b[1;31m");
+    printf("\x1b[1;%sm", isWarn ? "33" : "31");
 
 	for (int i = 0; i < info.length; i++) {
 		putchar('^');

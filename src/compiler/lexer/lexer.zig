@@ -46,6 +46,8 @@ const State = enum {
     minus,
     asterisk,
     slash,
+    l_angle,
+    r_angle,
 };
 
 export fn lx_init(source: [*:0]const u8) callconv(.c) Lexer {
@@ -94,6 +96,8 @@ export fn lx_nextTok(lx: *Lexer) callconv(.c) Token {
             '-' => continue :state .minus,
             '*' => continue :state .asterisk,
             '/' => continue :state .slash,
+            '<' => continue :state .l_angle,
+            '>' => continue :state .r_angle,
             '(' => {
                 advance(lx);
                 result.type = c.TOK_LPAREN;
@@ -228,6 +232,26 @@ export fn lx_nextTok(lx: *Lexer) callconv(.c) Token {
                     continue :state .comment;
                 },
                 else => result.type = c.TOK_SLASH,
+            }
+        },
+        .l_angle => {
+            advance(lx);
+            switch (lx.source[lx.index]) {
+                '=' => {
+                    advance(lx);
+                    result.type = c.TOK_LARROW_EQ;
+                },
+                else => result.type = c.TOK_LARROW,
+            }
+        },
+        .r_angle => {
+            advance(lx);
+            switch (lx.source[lx.index]) {
+                '=' => {
+                    advance(lx);
+                    result.type = c.TOK_RARROW_EQ;
+                },
+                else => result.type = c.TOK_RARROW,
             }
         },
     }

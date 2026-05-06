@@ -1,4 +1,4 @@
-func hello(a: *mut i32, b: *i32, c: [i32], d: [mut i32], e: [*]i32, f: [*mut]i32) {
+func hello(a: *mut i32, b: *i32, c: *[i32], d: *mut [i32], e: *[i32; ?], f: *mut [i32; ?]) {
     // a is mutable
     // b is immutable
     // c is immutable
