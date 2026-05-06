@@ -8,11 +8,11 @@
 #include "../lexer/lexer.h"
 
 #define MAKE_NODE(parser, type, nodeKind) \
-	(type*)memcpy(ARENA_ALLOC(&p->arena, type, 1), &(type){.kind = nodeKind, .token = p_lookahead(parser, 0)}, sizeof(type))
+	(type*)memcpy(ARENA_ALLOC(p->arena, type, 1), &(type){.kind = nodeKind, .token = p_lookahead(parser, 0)}, sizeof(type))
 
 typedef struct Parser {
     Lexer lx;
-    ArenaAllocator arena;
+    ArenaAllocator* arena;
 } Parser;
 
 typedef struct {
@@ -20,7 +20,7 @@ typedef struct {
 	int right;
 } BindingPower;
 
-Parser p_init(Lexer lx, ArenaAllocator arena);
+Parser p_init(Lexer lx, ArenaAllocator* arena);
 
 void p_consume(Parser* p, TokenType type, const char* message);
 void p_next(Parser* p);

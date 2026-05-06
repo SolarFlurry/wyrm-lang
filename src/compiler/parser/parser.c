@@ -9,7 +9,7 @@
 
 Token parseTok;
 
-Parser p_init(Lexer lx, ArenaAllocator arena) {
+Parser p_init(Lexer lx, ArenaAllocator* arena) {
     return (Parser) {
         .arena = arena,
         .lx = lx,
@@ -29,8 +29,6 @@ void consumeUntil(Parser* p, TokenType type) {
 }
 void p_next(Parser* p) {
 	parseTok = lx_nextTok(&p->lx);
-    printTokData(&parseTok);
-    printf(" type: %d\n", parseTok.type);
 }
 
 Token p_lookahead(Parser* p, size_t offset) {
@@ -40,7 +38,7 @@ Token p_lookahead(Parser* p, size_t offset) {
 AstNode* p_parse(Parser* p) {
 	p_next(p);
 
-	GrowableArray decls = GROWABLE_ARRAY_NEW(DeclNode*, &p->arena);
+	GrowableArray decls = GROWABLE_ARRAY_NEW(DeclNode*, p->arena);
 
 	while (p_lookahead(p, 0).type != TOK_EOF) {
 		DeclNode* decl = p_parseDecl(p);
@@ -49,7 +47,7 @@ AstNode* p_parse(Parser* p) {
 		*slot = decl;
 	}
 
-	AstNode* program = ARENA_ALLOC(&p->arena, AstNode, 1);
+	AstNode* program = ARENA_ALLOC(p->arena, AstNode, 1);
 
 	program->kind = NODE_PROGRAM;
 	program->data.program.decls = decls.data;

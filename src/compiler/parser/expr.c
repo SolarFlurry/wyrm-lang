@@ -131,7 +131,7 @@ static ExprNode* parseExprBP(Parser* p, int minBP) {
 			ExprNode* unaryOp = MAKE_NODE(p, ExprNode, NODE_EXPR_UNOP);
 			if (p_lookahead(p, 0).type == TOK_LPAREN) {
 				p_next(p);
-				GrowableArray exprs = GROWABLE_ARRAY_NEW(AstNode*, &p->arena);
+				GrowableArray exprs = GROWABLE_ARRAY_NEW(AstNode*, p->arena);
 				parseExpressionList(p, &exprs, TOK_RPAREN);
 				p_consume(p,TOK_RPAREN, "Expected matching ')'");
 				unaryOp->kind = NODE_EXPR_CALL;
@@ -185,7 +185,7 @@ ExprNode* parseBlock(Parser* p) {
 	ExprNode* block = MAKE_NODE(p, ExprNode, NODE_EXPR_BLOCK);
 	p_consume(p,TOK_LBRACE, "Expected '{'");
 
-	GrowableArray stmts = GROWABLE_ARRAY_NEW(AstNode*, &p->arena);
+	GrowableArray stmts = GROWABLE_ARRAY_NEW(AstNode*, p->arena);
 
 	while (p_lookahead(p, 0).type != TOK_RBRACE) {
 		AstNode* stmt = parseStatement(p);
@@ -218,7 +218,7 @@ ExprNode* parsePrimary(Parser* p) {
 				return expr;
 			}
 
-			GrowableArray tuple = GROWABLE_ARRAY_NEW(AstNode*, &p->arena);
+			GrowableArray tuple = GROWABLE_ARRAY_NEW(AstNode*, p->arena);
 			AstNode** s = growableArrayPush(&tuple);
 			*s = expr;
 			p_next(p);
@@ -236,7 +236,7 @@ ExprNode* parsePrimary(Parser* p) {
 			expr->data.builtinCall.builtin = p_lookahead(p, 0);
 			p_consume(p,TOK_IDENT, "Expected an identifier");
 			p_consume(p,TOK_LPAREN, "Expected '('");
-			GrowableArray args = GROWABLE_ARRAY_NEW(AstNode*, &p->arena);
+			GrowableArray args = GROWABLE_ARRAY_NEW(AstNode*, p->arena);
 
 			parseExpressionList(p, &args, TOK_RPAREN);
 			p_next(p);
@@ -250,7 +250,7 @@ ExprNode* parsePrimary(Parser* p) {
 		}
 		case TOK_IDENT: {
 			ExprNode* identifier = MAKE_NODE(p, ExprNode, NODE_EXPR_IDENT);
-			identifier->data.ident.name = createOwnedString(&p->arena, &getSource()[p_lookahead(p, 0).start], p_lookahead(p, 0).length);
+			identifier->data.ident.name = createOwnedString(p->arena, &getSource()[p_lookahead(p, 0).start], p_lookahead(p, 0).length);
 			p_next(p);
 			return identifier;
 		}
@@ -290,8 +290,8 @@ ExprNode* parsePrimary(Parser* p) {
 		case TOK_PIPE: case TOK_PIPE_PIPE: {
 			ExprNode* lambda = MAKE_NODE(p, ExprNode, NODE_EXPR_LAMBDA);
 
-			GrowableArray paramNames = GROWABLE_ARRAY_NEW(Token*, &p->arena);
-			GrowableArray paramTypes = GROWABLE_ARRAY_NEW(ExprNode*, &p->arena);
+			GrowableArray paramNames = GROWABLE_ARRAY_NEW(Token*, p->arena);
+			GrowableArray paramTypes = GROWABLE_ARRAY_NEW(ExprNode*, p->arena);
 
 			if (p_lookahead(p, 0).type == TOK_PIPE) {
 				p_next(p);
@@ -328,7 +328,7 @@ ExprNode* parsePrimary(Parser* p) {
 		default: {
 			const char* base = "Unexpected ";
 			const char* addition = describeTokenType(p_lookahead(p, 0).type);
-			char* fmt = ARENA_ALLOC(&p->arena, char, strlen(base) + strlen(addition) + 1);
+			char* fmt = ARENA_ALLOC(p->arena, char, strlen(base) + strlen(addition) + 1);
 			memcpy(fmt, base, strlen(base));
 			strcat(fmt, addition);
 			errorFromCause(fmt, p_lookahead(p, 0));

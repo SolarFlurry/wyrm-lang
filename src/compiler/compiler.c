@@ -39,7 +39,7 @@ uint8_t compile(const char* source, const char* filename, Chunk* result) {
 	
 	clock_t parseStart = clock();
 	Lexer lexer = lx_init(source);
-    Parser parser = p_init(lexer, allocator);
+    Parser parser = p_init(lexer, &allocator);
 	AstNode* ast = p_parse(&parser);
 
 	if (errorsCount() > 0) {
@@ -56,7 +56,7 @@ uint8_t compile(const char* source, const char* filename, Chunk* result) {
 
 	Scope topScope;
 	initScope(&allocator, &topScope, NULL);
-
+    
 	resolveNames(&allocator, ast, &topScope);
 	typeCheck(&allocator, ast, &topScope);
 

@@ -68,8 +68,8 @@ DeclNode* parseFuncDecl(Parser* p) {
 	decl->data.lvalue = p_lookahead(p, 0);
 	p_consume(p, TOK_IDENT, "Expected an identifier");
 	p_consume(p, TOK_LPAREN, "Expected '('");
-	GrowableArray paramNames = GROWABLE_ARRAY_NEW(Token, &p->arena);
-	GrowableArray paramTypes = GROWABLE_ARRAY_NEW(AstNode*, &p->arena);
+	GrowableArray paramNames = GROWABLE_ARRAY_NEW(Token, p->arena);
+	GrowableArray paramTypes = GROWABLE_ARRAY_NEW(AstNode*, p->arena);
 
 	parseParamList(p, &paramNames, &paramTypes, TOK_RPAREN, false);
 	p_consume(p, TOK_RPAREN, "Expected ')'");
@@ -84,7 +84,7 @@ DeclNode* parseFuncDecl(Parser* p) {
 
 	p_consume(p, TOK_LBRACE, "Expected '{'");
 
-	GrowableArray stmts = GROWABLE_ARRAY_NEW(AstNode*, &p->arena);
+	GrowableArray stmts = GROWABLE_ARRAY_NEW(AstNode*, p->arena);
 
 	while (p_lookahead(p, 0).type != TOK_RBRACE) {
 		AstNode* stmt = parseStatement(p);
@@ -131,7 +131,7 @@ DeclNode* p_parseDecl(Parser* p) {
 AstNode* parseStatement(Parser* p) {
 	switch (p_lookahead(p, 0).type) {
 		case TOK_KEYWORD_LET: case TOK_KEYWORD_CONST: {
-			return declToAst(&p->arena, p_parseDecl(p));
+			return declToAst(p->arena, p_parseDecl(p));
 		}
 		default: {
 			AstNode* stmt = parseExpression(p);

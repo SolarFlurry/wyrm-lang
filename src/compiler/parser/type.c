@@ -7,7 +7,7 @@
 ExprNode* parseType(Parser* p) {
 	switch (p_lookahead(p, 0).type) {
 		case TOK_IDENT: {
-			char* name = createOwnedString(&p->arena, &getSource()[p_lookahead(p, 0).start], p_lookahead(p, 0).length);
+			char* name = createOwnedString(p->arena, &getSource()[p_lookahead(p, 0).start], p_lookahead(p, 0).length);
 			p_next(p);
 			ExprNode* ast = MAKE_NODE(p, ExprNode, NODE_EXPR_TYPE_NAMED);
 			ast->data.type.named.name = name;

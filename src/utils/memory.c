@@ -52,7 +52,7 @@ void* arenaAlloc(ArenaAllocator* arena, ptrdiff_t s, ptrdiff_t align) {
 
 char* createOwnedString(ArenaAllocator* arena, const char* str, size_t length) {
 	char* c = ARENA_ALLOC(arena, char, length + 1);
-	strncpy(c, str, length);
+	memcpy(c, str, length);
 	c[length] = '\0';
 	return c;
 }

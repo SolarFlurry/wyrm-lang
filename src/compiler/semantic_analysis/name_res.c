@@ -29,7 +29,8 @@ static void resolveNode(ArenaAllocator* arena, DeclNode* decl, Scope* scope) {
 		} break;
 		case NODE_DECL_FUNC: {
 			Token lvalue = decl->data.lvalue;
-			char* s = createOwnedString(arena, &getSource()[lvalue.start], lvalue.length);
+            char* s = createOwnedString(arena, &getSource()[lvalue.start], lvalue.length);
+
 			ExprNode* type = ARENA_ALLOC(arena, ExprNode, 1);
 			type->kind = NODE_EXPR_TYPE_FUNC;
 			type->data.type.func.paramCount = decl->data.func.paramCount;
